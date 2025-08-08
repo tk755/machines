@@ -156,9 +156,9 @@ clone_repo() {
 }
 
 delete_repo() {
-    echo -e " $PROCESS_ICON Removing previous repo and tracked files"
+    echo -e " $PROCESS_ICON Deleting repo and tracked files"
 
-    # delete all previously tracked files
+    # delete all tracked files
     dotfiles ls-tree -r --name-only HEAD |
         sed "s|^|$HOME/|" |
         xargs -r -d '\n' rm -f
@@ -216,6 +216,7 @@ main() {
     echo
     print_bold "Bootstrap complete"
     echo -e " $FINISH_ICON $(dotfiles status | grep -oP '(?<=sparse checkout with ).*?(?=\.$)')"
+    echo -e " $FINISH_ICON Last commit $(dotfiles log -1 --format=%cr)\e[2m - $(dotfiles log -1 --format=%s)\e[0m"
 }
 
 cd "$HOME"
