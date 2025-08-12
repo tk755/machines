@@ -29,6 +29,8 @@ if [ -f "$HOME/.cargo/env" ]; then
 fi
 
 # setup Conda environment
-if [ -x "$HOME/miniconda3/bin/conda" ]; then
+if [ -x "$HOME/.miniconda3/bin/conda" ]; then
+    eval "$("$HOME/.miniconda3/bin/conda" shell.bash hook)"
+elif [ -x "$HOME/miniconda3/bin/conda" ]; then
     eval "$("$HOME/miniconda3/bin/conda" shell.bash hook)"
 fi
