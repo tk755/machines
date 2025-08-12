@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # config
-REPOS_DIR="$HOME/repos"
+REPOS_DIR="$HOME/code"
 
 # patterns to exclude during cloning (via substring matches)
 GITHUB_EXCLUDES=(
