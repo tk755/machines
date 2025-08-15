@@ -1,0 +1,312 @@
+# sway config file (adapted from i3 config file)
+                                 
+# font
+font pango:Fixedsys Excelsior 3.01-L2 10
+
+# wallpaper
+output * bg $HOME/Downloads/1 fill
+
+# bar
+bar {
+    swaybar_command waybar
+}
+
+
+# ██    ██  █████  ██████  ██  █████  ██████  ██      ███████ ███████ 
+# ██    ██ ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██      ██      
+# ██    ██ ███████ ██████  ██ ███████ ██████  ██      █████   ███████ 
+#  ██  ██  ██   ██ ██   ██ ██ ██   ██ ██   ██ ██      ██           ██ 
+#   ████   ██   ██ ██   ██ ██ ██   ██ ██████  ███████ ███████ ███████
+                                                                    
+
+# mod key
+set $mod Mod4
+
+# layer key
+set $shift Shift
+
+# olkb keys (row, column)
+set $olkb00 Q
+set $olkb01 W
+set $olkb02 E
+set $olkb03 R
+set $olkb04 T
+set $olkb05 Y
+set $olkb06 U
+set $olkb07 I
+set $olkb08 O
+set $olkb09 P
+set $olkb10 A
+set $olkb11 S
+set $olkb12 D
+set $olkb13 F
+set $olkb14 G
+set $olkb15 H
+set $olkb16 J
+set $olkb17 K
+set $olkb18 L
+set $olkb19 semicolon
+set $olkb20 Z
+set $olkb21 X
+set $olkb22 C
+set $olkb23 V
+set $olkb24 B
+set $olkb25 N
+set $olkb26 M
+set $olkb27 comma
+set $olkb28 period
+set $olkb29 slash
+set $olkb35 space
+
+# workspaces
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws0 "0"
+
+# colors 
+set $fg #D8DEE9
+set $bg #2E3440
+set $fbg #B48EAD
+set $ind #A3BE8C
+
+
+# ██     ██  ██████  ██████  ██   ██ ███████ ██████   █████   ██████ ███████ ███████ 
+# ██     ██ ██    ██ ██   ██ ██  ██  ██      ██   ██ ██   ██ ██      ██      ██      
+# ██  █  ██ ██    ██ ██████  █████   ███████ ██████  ███████ ██      █████   ███████ 
+# ██ ███ ██ ██    ██ ██   ██ ██  ██       ██ ██      ██   ██ ██      ██           ██ 
+#  ███ ███   ██████  ██   ██ ██   ██ ███████ ██      ██   ██  ██████ ███████ ███████
+
+
+# switch to workspace
+bindsym $mod+$olkb00 workspace $ws1
+bindsym $mod+$olkb01 workspace $ws2
+bindsym $mod+$olkb02 workspace $ws3
+bindsym $mod+$olkb10 workspace $ws4
+bindsym $mod+$olkb11 workspace $ws5
+bindsym $mod+$olkb12 workspace $ws6
+bindsym $mod+$olkb20 workspace $ws7
+bindsym $mod+$olkb21 workspace $ws8
+bindsym $mod+$olkb22 workspace $ws9
+bindsym $mod+$olkb23 workspace $ws0
+
+# move container to workspace
+bindsym $mod+$shift+$olkb00 move container to workspace $ws1
+bindsym $mod+$shift+$olkb01 move container to workspace $ws2
+bindsym $mod+$shift+$olkb02 move container to workspace $ws3
+bindsym $mod+$shift+$olkb10 move container to workspace $ws4
+bindsym $mod+$shift+$olkb11 move container to workspace $ws5
+bindsym $mod+$shift+$olkb12 move container to workspace $ws6
+bindsym $mod+$shift+$olkb20 move container to workspace $ws7
+bindsym $mod+$shift+$olkb21 move container to workspace $ws8
+bindsym $mod+$shift+$olkb22 move container to workspace $ws9
+bindsym $mod+$shift+$olkb23 move container to workspace $ws0
+
+# workspace back-and-forth
+workspace_auto_back_and_forth false
+bindsym $mod+Tab workspace back_and_forth
+
+# cycle between workspaces on the current display
+bindsym $mod+$olkb27 workspace prev_on_output
+bindsym $mod+$olkb28 workspace next_on_output
+
+# workspace configurations
+# none yet
+
+
+#  ██████  ██████  ███    ██ ████████  █████  ██ ███    ██ ███████ ██████  ███████ 
+# ██      ██    ██ ████   ██    ██    ██   ██ ██ ████   ██ ██      ██   ██ ██      
+# ██      ██    ██ ██ ██  ██    ██    ███████ ██ ██ ██  ██ █████   ██████  ███████ 
+# ██      ██    ██ ██  ██ ██    ██    ██   ██ ██ ██  ██ ██ ██      ██   ██      ██ 
+#  ██████  ██████  ██   ████    ██    ██   ██ ██ ██   ████ ███████ ██   ██ ███████
+                                                                                
+
+# change container focus
+bindsym $mod+$olkb16 focus left
+bindsym $mod+$olkb17 focus down
+bindsym $mod+$olkb18 focus up
+bindsym $mod+$olkb19 focus right
+
+# move focused container
+bindsym $mod+$shift+$olkb16 move left 50 px
+bindsym $mod+$shift+$olkb17 move down 50 px
+bindsym $mod+$shift+$olkb18 move up 50 px
+bindsym $mod+$shift+$olkb19 move right 50 px
+
+# resize container
+bindsym $mod+$olkb06 resize shrink width 50 px or 5 ppt
+bindsym $mod+$olkb07 resize shrink height 50 px or 5 ppt
+bindsym $mod+$olkb08 resize grow height 50 px or 5 ppt
+bindsym $mod+$olkb09 resize grow width 50 px or 5 ppt
+
+bindsym $mod+$shift+$olkb06 resize shrink width 10 px or 1 ppt
+bindsym $mod+$shift+$olkb07 resize shrink height 10 px or 1 ppt
+bindsym $mod+$shift+$olkb08 resize grow height 10 px or 1 ppt
+bindsym $mod+$shift+$olkb09 resize grow width 10 px or 1 ppt
+
+# fullscreen container
+bindsym $mod+Return fullscreen toggle
+
+# kill container
+bindsym $mod+apostrophe kill
+
+# focus parent/child
+bindsym $mod+$olkb03 focus child
+bindsym $mod+$shift+$olkb03 focus parent
+
+# change splitting orientation
+bindsym $mod+$olkb13 split toggle
+bindsym $mod+$shift+$olkb13 layout toggle tabbed split
+
+# floating containers
+
+# focus and toggle
+bindsym $mod+$olkb35 focus mode_toggle
+bindsym $mod+$shift+$olkb35 floating toggle
+
+# drag floating windows with Mouse+$mod
+floating_modifier $mod
+
+# border and colors
+
+default_border pixel 2
+default_floating_border pixel 3
+
+# class                 border  backgr. text indicator child_border
+client.focused          $fbg    $fbg    $fg     $ind    $fbg
+client.focused_inactive $bg     $bg     $fg     $bg     $bg
+client.unfocused        $bg     $bg     $fg     $bg     $bg
+client.urgent           $bg     $bg     $fg     $bg     $bg
+client.placeholder      $bg     $bg     $fg     $bg     $bg
+client.background       $bg
+
+
+# ██████  ██ ███████ ██████  ██       █████  ██    ██ ███████ 
+# ██   ██ ██ ██      ██   ██ ██      ██   ██  ██  ██  ██      
+# ██   ██ ██ ███████ ██████  ██      ███████   ████   ███████ 
+# ██   ██ ██      ██ ██      ██      ██   ██    ██         ██ 
+# ██████  ██ ███████ ██      ███████ ██   ██    ██    ███████ 
+
+
+# focus on another display
+bindsym $mod+$olkb26 focus output left
+bindsym $mod+$olkb29 focus output right
+
+# move workspace to another display
+bindsym $mod+$shift+$olkb26 move workspace to output left
+bindsym $mod+$shift+$olkb29 move workspace to output right
+
+# move container to another display
+bindsym $mod+$shift+$olkb27 move container to output left; focus output left
+bindsym $mod+$shift+$olkb28 move container to output right; focus output right
+
+
+# ██████  ██████   ██████   ██████  ██████   █████  ███    ███ ███████ 
+# ██   ██ ██   ██ ██    ██ ██       ██   ██ ██   ██ ████  ████ ██      
+# ██████  ██████  ██    ██ ██   ███ ██████  ███████ ██ ████ ██ ███████ 
+# ██      ██   ██ ██    ██ ██    ██ ██   ██ ██   ██ ██  ██  ██      ██ 
+# ██      ██   ██  ██████   ██████  ██   ██ ██   ██ ██      ██ ███████
+
+
+bindsym $mod+Escape exec rofi -show drun
+
+bindsym $mod+$olkb04 nop
+bindsym $mod+$shift+$olkb04 nop
+
+bindsym $mod+$olkb05 exec spotify
+bindsym $mod+$shift+$olkb05 nop
+
+bindsym $mod+$olkb14 exec firefox --new-window
+bindsym $mod+$shift+$olkb14 exec firefox --new-window --private-window
+
+bindsym $mod+$olkb15 exec alacritty
+bindsym $mod+$shift+$olkb15 nop
+
+bindsym $mod+$olkb24 exec thunar
+bindsym $mod+$shift+$olkb24 nop
+
+bindsym $mod+$olkb25 exec code --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
+bindsym $mod+$shift+$olkb25 exec code --new-window --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
+
+
+# ██████  ███████ ██       ██████   █████  ██████  
+# ██   ██ ██      ██      ██    ██ ██   ██ ██   ██ 
+# ██████  █████   ██      ██    ██ ███████ ██   ██ 
+# ██   ██ ██      ██      ██    ██ ██   ██ ██   ██ 
+# ██   ██ ███████ ███████  ██████  ██   ██ ██████  
+
+
+# scripts executed on restart
+exec_always $HOME/.bin/sway/restart
+
+# scripts executed on startup
+exec $HOME/.bin/i3/startup
+
+# restart inplace (preserves current layout)
+bindsym $mod+BackSpace reload
+
+# lock screen
+bindsym $mod+$shift+BackSpace exec $HOME/.bin/i3/lock
+
+# exit sway (logs out of Wayland session)
+# bindsym $mod+$shift+BackSpace exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
+
+
+# ███████ ██████  ███████  ██████ ██  █████  ██          ██   ██ ███████ ██    ██ ███████ 
+# ██      ██   ██ ██      ██      ██ ██   ██ ██          ██  ██  ██       ██  ██  ██      
+# ███████ ██████  █████   ██      ██ ███████ ██          █████   █████     ████   ███████ 
+#      ██ ██      ██      ██      ██ ██   ██ ██          ██  ██  ██         ██         ██ 
+# ███████ ██      ███████  ██████ ██ ██   ██ ███████     ██   ██ ███████    ██    ███████ 
+
+
+# screenshot (requires: grimshot)
+bindsym Print exec grimshot --notify savecopy anything "$HOME/Pictures/$(date +%m-%d-%y_%H-%M-%S).png"      # area/window/output selection
+bindsym $shift+Print exec grimshot --notify savecopy output "$HOME/Pictures/$(date +%m-%d-%y_%H-%M-%S).png" # fullscreen
+
+# brightness (requires: brightnessctl)
+bindsym XF86MonBrightnessUp exec brightnessctl --exponent=2.5 set +10%
+bindsym XF86MonBrightnessDown exec brightnessctl --exponent=2.5 set 10%-
+
+# music player (requires: playerctl)
+bindsym --locked {
+    XF86AudioPlay       exec playerctl play-pause
+    XF86AudioPause      exec playerctl play-pause
+    XF86AudioStop       exec playerctl stop
+}
+
+bindsym {
+    XF86AudioNext       exec playerctl next
+    XF86AudioPrev       exec playerctl previous
+    XF86AudioForward    exec playerctl position +10
+    XF86AudioRewind     exec playerctl position -10
+}
+
+# volume: TODO use sway-native wpctl (pipewire)
+# NOTE:
+#   By default, pulseaudio has a delay on the volume settings
+#   To disable it, edit the file /etc/pulse/daemon.conf by
+#     adding/replacing the setting `enable-deferred-volume = no` (w/o a semicolon)
+#   For more info see `man pulse-daemon.conf`
+bindsym XF86AudioMute exec amixer sset 'Master' toggle
+bindsym XF86AudioLowerVolume exec amixer sset 'Master' 5%-
+bindsym XF86AudioRaiseVolume exec amixer sset 'Master' 5%+
+
+
+#  ██████   █████  ██████  ███████ 
+# ██       ██   ██ ██   ██ ██      
+# ██   ███ ███████ ██████  ███████ 
+# ██    ██ ██   ██ ██           ██ 
+#  ██████  ██   ██ ██      ███████ 
+
+
+set $gap 8
+
+gaps inner $gap
+
+bindsym $mod+$shift+Return gaps inner all toggle $gap
