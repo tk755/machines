@@ -262,8 +262,8 @@ bindsym $mod+$shift+BackSpace exec $HOME/.bin/i3/lock
 
 # screenshot
 # REQUIRES: sudo apt install maim
-bindsym Print exec $HOME/.bin/i3/screenshot               # save to ~/pics/screenshots
-bindsym $shift+Print exec $HOME/.bin/i3/screenshot --full # save to clipboard
+bindsym Print exec $HOME/.bin/x11/screenshot               # save to ~/pics/screenshots
+bindsym $shift+Print exec $HOME/.bin/x11/screenshot --full # save to clipboard
 
 # brightness
 # REQUIRES: sudo apt install brightnessctl
