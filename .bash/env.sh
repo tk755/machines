@@ -1,36 +1,43 @@
-# add machine-specific user scripts to path
-if [ -d "$HOME/.bin/$(hostname)" ]; then
-    PATH="$HOME/.bin/$(hostname):$PATH"
+add_to_path() {
+    [ -d "$1" ] || return     # skip if directory does not exist 
+    case ":$PATH:" in
+        *":$1:"*)          ;; # skip if already in PATH
+        *) PATH="$1:$PATH" ;; # prepend to PATH
+    esac
+}
+
+# machine-specific scripts
+add_to_path "$HOME/.bin/$(hostname -s)"
+
+# platform + wm-specific scripts
+if [ -n "$DISPLAY" ]; then
+    add_to_path "$HOME/.bin/x11"
+    add_to_path "$HOME/.bin/i3"
+elif [ -n "$WAYLAND_DISPLAY" ]; then
+    add_to_path "$HOME/.bin/wayland"
+    add_to_path "$HOME/.bin/sway"
+    add_to_path "$HOME/.bin/hyprland"
 fi
 
-# add shared user scripts to path
-if [ -d "$HOME/.bin" ]; then
-    PATH="$HOME/.bin:$PATH"
-fi
+# shared user scripts
+add_to_path "$HOME/.bin"
+add_to_path "$HOME/.local/bin"
 
-# add standard user scripts to path
-if [ -d "$HOME/.local/bin" ]; then
-    PATH="$HOME/.local/bin:$PATH"
-fi
-
-# add OCaml merlin to path
-if [ -d "$HOME/.opam/default/bin" ]; then
-    PATH="$HOME/.opam/default/bin:$PATH"
-fi
-
-# add Go binary to path
-if [ -d "/usr/local/go/bin" ]; then
-    PATH="/usr/local/go/bin:$PATH"
-fi
-
-# setup Rust toolchain
+# language toolchains
+add_to_path "$HOME/.opam/default/bin" # OCaml toolchain
+add_to_path "/usr/local/go/bin"       # Go toolchain
+add_to_path "$HOME/go/bin"            # Go binaries
 if [ -f "$HOME/.cargo/env" ]; then
-    . "$HOME/.cargo/env"
+    . "$HOME/.cargo/env"              # Rust toolchain
 fi
 
 # setup Conda environment
-if [ -x "$HOME/.miniconda3/bin/conda" ]; then
-    eval "$("$HOME/.miniconda3/bin/conda" shell.bash hook)"
-elif [ -x "$HOME/miniconda3/bin/conda" ]; then
-    eval "$("$HOME/miniconda3/bin/conda" shell.bash hook)"
+if [ -n "$BASH_VERSION" ]; then
+    if [ -x "$HOME/.miniconda3/bin/conda" ]; then
+        eval "$("$HOME/.miniconda3/bin/conda" shell.bash hook)"
+    elif [ -x "$HOME/miniconda3/bin/conda" ]; then
+        eval "$("$HOME/miniconda3/bin/conda" shell.bash hook)"
+    fi
 fi
+
+export PATH
