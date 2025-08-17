@@ -9,7 +9,8 @@
     "modules-left": [
         "disk",
         "memory",
-        "cpu"
+        "cpu",
+        "temperature"
     ],
     "modules-center": [
         "sway/workspaces"
@@ -29,25 +30,36 @@
     "disk": {
         "path": "/",
         "interval": 10,
-        "format": " {percentage_used}%",
-        "format-alt": " {percentage_used}%",
-        "tooltip-format": "{used} / {total} ({percentage_used}%)"
+        "format": " {percentage_used}%",
+        "tooltip-format": "Storage: {used} / {total} ({percentage_used}%)"
     },
+    
     "memory": {
-        "interval": 1,
-        "format": " {percentage}%",
-        "tooltip-format": "{used:0.2f}GiB / {total:0.2f}GiB ({percentage}%)"
+        "interval": 2,
+        "format": " {percentage}%",
+        "tooltip-format": "RAM: {used:0.2f}GiB / {total:0.2f}GiB ({percentage}%)"
     },
+    
     "cpu": {
-        "interval": 1,
-        "format": " {usage}%"
+        "interval": 2,
+        "format": " {usage}%"
+    },
+
+    "temperature": {
+        "interval": 2,
+        // specific to ducati
+        "hwmon-path": "/sys/devices/platform/coretemp.0/hwmon/hwmon3/temp1_input",
+        "critical-threshold": 80,
+        "format": "{icon} {temperatureC}°C",
+        "format-icons": ["", "", ""],
+        "tooltip-format": "CPU Package Temperature"
     },
 
     "pulseaudio": {
         "interval": 2,
         "format": "{volume}% {icon}",
-        "format-muted": "Muted ",
-        "format-icons": ["", "", ""],
+        "format-muted": "Muted ",
+        "format-icons": ["", "", ""],
         "scroll-step": 2,
         "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
         "on-scroll-up": "pactl set-sink-volume @DEFAULT_SINK@ +2%",
@@ -58,25 +70,25 @@
         "interval": 10,
         "full-at": 97,
         "format": "{capacity}% {icon}",
-        "format-charging": "{capacity}% ",
-        "format-plugged":  "{capacity}% ",
-        "format-full":     "Full ",
-        "format-icons": ["", "", "", "", ""],
+        "format-charging": "{capacity}% ",
+        "format-plugged":  "{capacity}% ",
+        "format-full":     "Full ",
+        "format-icons": ["", "", "", "", ""],
         "states": { "good": 60, "warning": 30, "critical": 15 },
         "hide-if-unsupported": true
     },
 
     "network": {
         "interval": 5,
-        "format-wifi":       "{essid} ({signalStrength}%) ",
-        "format-ethernet":   "{ipaddr}/{cidr} ",
+        "format-wifi":       "{essid} ({signalStrength}%) ",
+        "format-ethernet":   "{ipaddr}/{cidr} ",
         "format-disconnected": "Disconnected ",
         "tooltip-format":    "{ifname} — {ipaddr}"
     },
 
     "clock": {
         "interval": 1,
-        "format": "{:%I:%M:%S %p} ",
+        "format": "{:%I:%M:%S %p} ",
         "tooltip-format": "<tt>{calendar}</tt>",
         "calendar": {
             "mode": "month",
@@ -86,3 +98,8 @@
         }
     }
 }
+
+// for the future:
+//  - mic
+//  - mic muted
+//  - bluetooth

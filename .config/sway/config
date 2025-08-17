@@ -309,4 +309,5 @@ set $gap 8
 
 gaps inner $gap
 
-bindsym $mod+$shift+Return gaps inner all toggle $gap
+# don't toggle top gap for space between bar
+bindsym $mod+$shift+Return gaps inner all toggle $gap ; gaps top all toggle $gap

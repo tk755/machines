@@ -8,9 +8,10 @@ window#waybar {
 }
 
 #workspaces button,
-#cpu,
-#memory,
 #disk,
+#memory,
+#cpu,
+#temperature,
 #network,
 #pulseaudio,
 #battery,
@@ -25,21 +26,27 @@ window#waybar {
     color: #1C1E20;
 }
 
+#workspaces button {
+    padding: 0 4px;
+}
+
 #workspaces button.urgent   { background: #EC6798; }
 #workspaces button.visible  { background: #8C8C8C; }
 #workspaces button.focused  { background: #FFFFFF; }
 #workspaces button:hover    { background: #666666; }
-#cpu                        { background: #4bb84f; }
-#memory                     { background: #E78958; }
 #disk                       { background: #7A84C1; }
-#network                    { background: #BE78D1; }
-#network.disconnected       { background: #EC7875; }
+#memory                     { background: #E78958; }
+#cpu                        { background: #4bb84f; }
+#temperature                { background: #EDB83F; }
+#temperature.critical       { background: #eb4d4b; }
 #pulseaudio                 { background: #75A4CD; }
 #pulseaudio:hover           { background: #5a82a7; }
 #battery                    { background: #EC7875; }
 #battery.full               { background: #61C766; }
 #battery.charging           { background: #EC7875; }
 #backlight                  { background: #76B84B; }
+#network                    { background: #BE78D1; }
+#network.disconnected       { background: #EC7875; }
 #clock                      { background: #EBD369; }
 #clock:hover                { background: #c9af45; }
 #custom-updates             { background: #EDB83F; }
