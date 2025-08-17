@@ -1,0 +1,41 @@
+[font]
+normal = { family = "Menlo", style = "Regular" }
+size = 12
+
+[window]
+padding = { x = 10, y = 10 }
+
+# OneDark Pro Night Flat (https://github.com/Binaryify/OneDark-Pro/blob/master/themes/OneDark-Pro-night-flat.json)
+
+[colors.primary]
+background = "#050505"
+foreground = "#abb2bf"
+
+[colors.normal]
+black   = "#3f4451"
+red     = "#e05561"
+green   = "#46d36a"
+yellow  = "#e1c951"
+blue    = "#4aa5f0"
+magenta = "#c162de"
+cyan    = "#42b3c2"
+white   = "#d7dae0"
+
+[colors.bright]
+black   = "#4f5666"
+red     = "#ff616e"
+green   = "#5ae67d"
+yellow  = "#f0d967"
+blue    = "#4dc4ff"
+magenta = "#de73ff"
+cyan    = "#4cd1e0"
+white   = "#e6e6e6"
+
+[colors.cursor]
+text   = "#16191d"
+cursor = "#528bff"
+
+[cursor]
+style = { blinking = "Always" }
+blink_interval = 500
+blink_timeout = 0
