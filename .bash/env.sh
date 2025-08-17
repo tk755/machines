@@ -10,13 +10,13 @@ add_to_path() {
 add_to_path "$HOME/.bin/$(hostname -s)"
 
 # platform + wm-specific scripts
-if [ -n "$DISPLAY" ]; then
-    add_to_path "$HOME/.bin/x11"
-    add_to_path "$HOME/.bin/i3"
-elif [ -n "$WAYLAND_DISPLAY" ]; then
+if [ -n "$WAYLAND_DISPLAY" ]; then
     add_to_path "$HOME/.bin/wayland"
     add_to_path "$HOME/.bin/sway"
     add_to_path "$HOME/.bin/hyprland"
+elif [ -n "$DISPLAY" ]; then
+    add_to_path "$HOME/.bin/x11"
+    add_to_path "$HOME/.bin/i3"
 fi
 
 # shared user scripts
