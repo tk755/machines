@@ -1,8 +1,51 @@
 # `ducati`
 
-**NOTE:** **Currently `ducati` does not use GPU passthrough for VMs.** I performed the installation steps so I know they work, but I reverted back after realizing that 95% of my usage is on Linux. It doesn't currently make sense to reserve my GPU for the other 5%. But I leave this document in case the need ever arises in the future.
+A Linux development workstation accessible remotely via Tailscale.
 
-## Purpose
+## Hardware
+
+Type | Make | Model | Date | Price
+--- | --- | --- | --- | ---
+GPU | NVIDIA | RTX 3090 Ti | Oct 2022 | $1,172.86
+CPU | Intel | Core i7-13700K | Nov 2022 | $392.57
+RAM | Corsair | Vengeance LPX 64 GB DDR4 3600 MHz | Nov 2022 | $183.38
+Storage | WD | SN850X 2 TB NVMe SSD (x2) | Nov 2022 | $362.50
+Motherboard | MSI | MAG 7690 Tomahawk WIFI DDR4 | Nov 2022 | $267.56
+
+## GPU Setup
+
+Disable Secure Boot in UEFI/BIOS.
+
+[Enable RPM Fusion repos](https://rpmfusion.org/Configuration#Command_Line_Setup_using_rpm):
+```bash
+sudo dnf install \
+  https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
+  https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+```
+
+Enable OpenH264 library:
+```bash
+sudo dnf config-manager setopt fedora-cisco-openh264.enabled=1
+```
+
+[Install NVIDIA drivers](https://rpmfusion.org/Howto/NVIDIA#Current_GeForce.2FQuadro.2FTesla):
+```bash
+sudo dnf update -y
+sudo dnf install akmod-nvidia xorg-x11-drv-nvidia-cuda
+```
+
+[Prevent accidental removal of NVIDIA driver](https://rpmfusion.org/Howto/NVIDIA#dnf_autoremove):
+```
+sudo dnf mark user akmod-nvidia
+```
+
+Reboot. Then verify installation:
+```bash
+nvidia-smi  # check driver
+```
+
+
+## [deprecated] Virtualization
 
 Linux development workstation with an on-demand Windows VM using GPU passthrough for applications like CAD and occasional gaming.
 - When the VM is off, Linux retains full GPU access for compute workloads.
