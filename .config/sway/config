@@ -6,6 +6,10 @@ font pango:Fixedsys Excelsior 3.01-L2 10
 # wallpaper
 output * bg $HOME/Downloads/1 fill
 
+# monitors
+output DP-4 pos 0 0
+output DP-5 pos 2560 0
+
 # bar
 bar {
     swaybar_command waybar
