@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# import gtk3 settings
+source $HOME/.bin/wayland/import-gtk3-settings
