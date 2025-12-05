@@ -1,11 +1,23 @@
 {
-  "includeCoAuthoredBy": false,
   "env": {
     "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
+  },
+  "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(ls:*)",
+      "Bash(tree:*)",
+      "Bash(cat:*)",
+      "Bash(pip show:*)"
+    ],
+    "deny": [],
+    "ask": []
   },
   "statusLine": {
     "type": "command",
     "command": "npx -y ccstatusline@latest",
     "padding": 0
-  }
+  },
+  "alwaysThinkingEnabled": false
 }
