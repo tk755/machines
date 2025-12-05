@@ -21,5 +21,10 @@ alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias tree='tree --dirsfirst -C'
 
-# shortcuts
-alias c='claude -p'
+# q-like shortcut for claude code
+c() {
+  case "$1" in
+    -n) shift; claude -p "$*";;     # new session
+     *)        claude -c -p "$*";;  # continue session
+  esac
+}
