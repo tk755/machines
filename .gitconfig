@@ -9,9 +9,10 @@
 	rebase = true
 [rebase]
 	autosquash = true
+	committerDateIsAuthorDate = true
 [alias]
 	# shortcuts
-	l = log --pretty='%C(yellow)%h%C(auto)%d %C(reset)%s %C(cyan)(%cd)%C(dim white) - %an%C(reset)' --graph --date=relative --date-order
+	l = log --pretty='%C(yellow)%h%C(auto)%d %C(reset)%s %C(cyan)(%ad)%C(dim white) - %an%C(reset)' --graph --date=relative --date-order
 	ll = l -10
 	d = diff -w --word-diff=color --ignore-space-at-eol
 	ds = d --cached
