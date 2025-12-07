@@ -5,11 +5,14 @@
   "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
-      "WebSearch",
       "Bash(ls:*)",
       "Bash(tree:*)",
+      "Bash(find:*)",
       "Bash(cat:*)",
-      "Bash(pip show:*)"
+      "Bash(wc:*)",
+      "Bash(pip show:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []
