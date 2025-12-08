@@ -1,0 +1,34 @@
+line-length = 120
+target-version = "py312"
+
+[lint]
+extend-select = [
+    "A",     # flake8-builtins: don't shadow builtins
+    "ASYNC", # flake8-async: async blocking call detection
+    "B",     # flake8-bugbear: common gotchas
+    "C4",    # flake8-comprehensions: comprehension simplifications
+    "EXE",   # flake8-executable: permissions and shebangs
+    "I",     # isort: sort imports
+    "ICN",   # flake8-import-conventions: import aliases
+    "LOG",   # flake8-logging: logging best practices
+    "NPY",   # numpy: numpy-specific rules
+    "PIE",   # flake8-pie: redundant code removal
+    "PTH",   # flake8-use-pathlib: prefer pathlib
+    "RUF",   # ruff-specific: misc useful rules
+    "SIM",   # flake8-simplify: simplification rules
+    "UP",    # pyupgrade: modernize syntax
+]
+ignore = [
+    "ASYNC109", # timeout param → context manager
+    "ASYNC110", # sleep in loop → Event
+    "ASYNC115", # trio: sleep(0) → checkpoint()
+    "ASYNC240", # blocking path methods in async
+    "ASYNC250", # blocking input() in async
+    "E501",     # line too long
+    "SIM102",   # nested if → combined if
+    "SIM105",   # try/except/pass → contextlib.suppress
+    "SIM108",   # if/else assign → ternary
+    "SIM112",   # env var lowercase → uppercase
+    "SIM116",   # if/elif chain → dict lookup
+    "SIM117",   # nested with → single with
+]
