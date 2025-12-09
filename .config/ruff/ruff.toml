@@ -11,6 +11,7 @@ extend-select = [
     "I",     # isort: sort imports
     "ICN",   # flake8-import-conventions: import aliases
     "LOG",   # flake8-logging: logging best practices
+    "N",     # pep8-naming: naming conventions
     "NPY",   # numpy: numpy-specific rules
     "PIE",   # flake8-pie: redundant code removal
     "PTH",   # flake8-use-pathlib: prefer pathlib
@@ -26,7 +27,6 @@ ignore = [
     "ASYNC250", # blocking input() in async
     "E501",     # line too long
     "SIM102",   # nested if → combined if
-    "SIM105",   # try/except/pass → contextlib.suppress
     "SIM108",   # if/else assign → ternary
     "SIM112",   # env var lowercase → uppercase
     "SIM116",   # if/elif chain → dict lookup
