@@ -10,6 +10,8 @@
 [rebase]
 	autosquash = true
 	committerDateIsAuthorDate = true
+[push]
+	autoSetupRemote = true
 [alias]
 	# shortcuts
 	l = log --pretty='%C(yellow)%h%C(auto)%d %C(reset)%s %C(cyan)(%ad)%C(dim white) - %an%C(reset)' --graph --date=relative --date-order
