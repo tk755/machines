@@ -2,25 +2,36 @@
   "env": {
     "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
   },
-  "includeCoAuthoredBy": false,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "permissions": {
     "allow": [
-      "Bash(ls:*)",
-      "Bash(tree:*)",
-      "Bash(find:*)",
-      "Bash(cat:*)",
-      "Bash(wc:*)",
-      "Bash(pip show:*)",
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
       "WebSearch",
-      "WebFetch(domain:github.com)"
+      "WebFetch"
     ],
     "deny": [],
-    "ask": []
+    "ask": [
+      "Bash(git push *)",
+      "Bash(git push)",
+      "Bash(git commit *)",
+      "Bash(git commit)",
+      "Bash(sudo *)",
+      "Bash(rm -rf *)"
+    ]
   },
   "statusLine": {
     "type": "command",
     "command": "npx -y ccstatusline@latest",
     "padding": 0
   },
-  "alwaysThinkingEnabled": false
+  "model": "opus",
+  "effortLevel": "high"
 }
