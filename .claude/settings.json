@@ -10,8 +10,6 @@
     "allow": [
       "Bash",
       "Read",
-      "Edit",
-      "Write",
       "Glob",
       "Grep",
       "WebSearch",
@@ -24,12 +22,14 @@
       "Bash(git commit *)",
       "Bash(git commit)",
       "Bash(sudo *)",
-      "Bash(rm -rf *)"
+      "Bash(rm -rf *)",
+      "Bash(curl *)",
+      "Bash(wget *)"
     ]
   },
   "statusLine": {
     "type": "command",
-    "command": "npx -y ccstatusline@latest",
+    "command": "~/.bin/claude-statusline",
     "padding": 0
   },
   "model": "opus",
