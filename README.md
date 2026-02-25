@@ -39,7 +39,7 @@ Scripts intended to be invoked by the user are on `$PATH`:
 - `~/.bin/<hostname>/` — specific to a particular machine (takes precedence over `~/.bin/`)
 
 Scripts not intended to be invoked directly are elsewhere:
-- `~/.bin/lib/` — shared helpers called by other scripts
+- `~/.bin/common/` — shared helpers called by other scripts
 - `~/.config/**` — application-specific scripts live alongside their configs (e.g. `~/.config/i3/scripts/`)
 
 Scripts on `$PATH` never have file extensions; all others always do.

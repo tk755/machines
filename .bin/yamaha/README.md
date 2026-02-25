@@ -69,7 +69,7 @@ sudo ~/.bin/yamaha/packages/apt-install.sh
 Create short-named directories, XDG mappings, and symlinks to cloud storage.
 
 ```
-~/.bin/lib/init-dirs.py
+~/.bin/common/init-dirs.py
 ```
 
 ## 7. Dropbox

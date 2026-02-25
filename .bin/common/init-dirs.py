@@ -26,7 +26,6 @@ XDG_DIRS = {
 # symlinks: destination -> source (created only if source exists)
 SYMLINKS = {
     "code":    "Dropbox/code",
-    "cornell": "Dropbox/cornell",
     "docs":    "Dropbox/documents",
     "pics":    "Dropbox/media/pictures",
     "vids":    "Dropbox/media/videos",
