@@ -6,8 +6,6 @@
 # user-dirs to point at them, and creates symlinks to cloud storage
 # (e.g., Dropbox) when available. Migrates contents from old XDG
 # directories if they exist. Idempotent.
-#
-# Used by host provision scripts.
 
 import shutil
 from pathlib import Path

@@ -42,7 +42,4 @@ Scripts not intended to be invoked directly are elsewhere:
 - `~/.bin/lib/` — shared helpers called by other scripts
 - `~/.config/**` — application-specific scripts live alongside their configs (e.g. `~/.config/i3/scripts/`)
 
-### Conventions
-
-- Scripts on `$PATH` never have file extensions; all others always do.
-- Each host can optionally have a `provision` script at `~/.bin/<hostname>/provision` for first-time system setup (e.g. installing packages, systemd units, hardware fixes, etc.).
+Scripts on `$PATH` never have file extensions; all others always do.

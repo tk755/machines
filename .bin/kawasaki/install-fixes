@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# One-time system setup for kawasaki.
-# Fixes power management issues.
+# This script only needs to be run once when kawasaki is installed
+# to fix some common issues related to power management.
 
 # ensure root user
 if [ $EUID -ne 0 ]; then
@@ -19,7 +19,7 @@ fi
 USER_HOME=$(eval echo ~${SUDO_USER:-$USER})
 
 # copy the fix scripts
-cp -v "$USER_HOME/.bin/kawasaki/systemd/network_hack_hibernation" /usr/lib/systemd/system-sleep/
-cp -v "$USER_HOME/.bin/kawasaki/systemd/lid_wakeup_disable"       /usr/lib/systemd/system-sleep/
+cp -v "$USER_HOME/.bin/kawasaki/fixes/network_hack_hibernation" /usr/lib/systemd/system-sleep/
+cp -v "$USER_HOME/.bin/kawasaki/fixes/lid_wakeup_disable"       /usr/lib/systemd/system-sleep/
 
 echo -e "\e[1m\e[32mFixes successfully installed\e[0m"
