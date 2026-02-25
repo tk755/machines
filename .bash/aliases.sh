@@ -22,7 +22,7 @@ alias grep='grep --color=auto'
 alias tree='tree --dirsfirst -C'
 
 # q-like shortcut for claude code
-c() {
+cc() {
   case "$1" in
     -n) shift; claude -p "$*";;     # new session
      *)        claude -c -p "$*";;  # continue session
