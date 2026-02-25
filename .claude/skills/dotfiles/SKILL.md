@@ -1,25 +1,19 @@
 ---
 description: Sync local dotfile changes to the dotfiles repository
+disable-model-invocation: true
 allowed-tools: Bash, Read, Grep, Glob, Skill
 ---
 
-## Dotfiles repo context
+## Context
 
-The dotfiles repo is a bare git repo at `$HOME/.dotfiles` with `$HOME` as the worktree. All git commands must be prefixed with:
+Bare git repo at `$HOME/.dotfiles` with `$HOME` as the worktree. All git commands must be prefixed with:
 ```
 git --git-dir=$HOME/.dotfiles --work-tree=$HOME
 ```
 
-For example, `git status` becomes `git --git-dir=$HOME/.dotfiles --work-tree=$HOME status`.
+`status.showUntrackedFiles` is set to `no` so new files won't appear in status. Use conversation context to identify new files to add, and always ask for confirmation before staging them.
 
-The repo has `status.showUntrackedFiles` set to `no`, so new files won't appear in status. Use the conversation context to identify new files that should be added, and **always ask for confirmation** before staging them.
-
-Commit message style for this repo:
-- **Lowercase** — no capitalization
-- **Concise** — short phrase, not a sentence
-- **No period** — no trailing punctuation
-- **Descriptive** — says what changed, not why
-- Examples: `update ruff rule list`, `add claude commit skill`, `add file extensions to non-PATH scripts`
+Commit messages are lowercase, concise, descriptive, with no trailing punctuation (e.g. `update ruff rule list`, `add file extensions to non-PATH scripts`).
 
 ## Execution
 

@@ -1,11 +1,12 @@
 ---
-description: Sync local changes to the remote repository
+description: Sync local changes to a repository
+disable-model-invocation: true
 allowed-tools: Bash, Read, Grep, Glob
 ---
 
-## Steps
+## Instructions
 
-### 1. Check status
+### 1. Fetch changes
 
 Run these commands in parallel:
 - `git status` to see changed and staged files
@@ -19,17 +20,15 @@ Review the diff output to understand what changed and why. Group related changes
 
 ### 3. Handle untracked files
 
-If the user mentions files they want to add that aren't already tracked, **always ask for confirmation** before staging them. Never add untracked files without explicit approval.
-
-When adding new files, check for supporting files that logically belong together (e.g., a skill's templates, examples, or scripts; a config's associated directories or includes). Propose adding these as part of the same commit.
+If the user mentions files they want to add that aren't already tracked, check for supporting files needed for completeness (configs, libraries, scripts) and propose them together. Always ask for confirmation before staging untracked files.
 
 ### 4. Propose commits
 
 For each logical group of changes, propose:
 - Which files to stage
-- A **single-line** commit message matching the repo's style (lowercase, no bullet points, no multi-line bodies)
+- A **single-line** commit message (lowercase, no bullet points, no multi-line bodies)
 
-Present the plan and wait for user approval. If the user requests any changes, update the plan accordingly and present the revised plan iteratively until they approve. Never proceed to commit until the user explicitly approves the final plan.
+Present the plan and wait for explicit approval before committing. Do not proceed to commit until the user approves both the files and the message.
 
 ### 5. Commit
 
@@ -39,7 +38,7 @@ git add <files>
 git commit -m '<message>'
 ```
 
-**NEVER ADD YOURSELF AS A CO-AUTHOR** — the repo's history should reflect the original author of each change, not the assistant who helped write the commit message. Do not include `Co-authored-by` lines or any attribution to yourself in commits.
+Never add `Co-authored-by` lines or any self-attribution to commits.
 
 ### 6. Push
 
@@ -47,3 +46,5 @@ After committing, ask the user if they want to push. Push with:
 ```
 git push
 ```
+
+If the push fails because the remote has diverged, stop and ask the user how they want to resolve it. Never force push without explicit approval.
