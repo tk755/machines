@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# This script only needs to be run once when kawasaki is installed 
-# to fix some common issues related to power management.
+# One-time system setup for kawasaki.
+# Fixes power management issues.
 
 # ensure root user
 if [ $EUID -ne 0 ]; then
