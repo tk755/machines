@@ -1,9 +1,0 @@
-~/code = ~/Dropbox/code
-~/cornell = ~/Dropbox/cornell
-
-XDG_DOWNLOAD_DIR: ~/dwn
-XDG_DOCUMENTS_DIR: ~/docs = ~/Dropbox/documents
-XDG_PICTURES_DIR: ~/pics = ~/Dropbox/media/pictures
-XDG_VIDEOS_DIR: ~/vids = ~/Dropbox/media/videos
-XDG_MUSIC_DIR: ~/music = ~/Dropbox/media/music
-XDG_TEMPLATES_DIR: ~/templates
