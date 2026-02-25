@@ -13,16 +13,26 @@
 [push]
 	autoSetupRemote = true
 [alias]
-	# shortcuts
-	l = log --pretty='%C(yellow)%h%C(auto)%d %C(reset)%s %C(cyan)(%ad)%C(dim white) - %an%C(reset)' --graph --date=relative --date-order
-	ll = l -10
-	d = diff -w --word-diff=color --ignore-space-at-eol
-	ds = d --cached
-	dc = d HEAD --
+	# status
 	s = status -sb
+	# unstaged changes
+	d = diff -w --word-diff=color --ignore-space-at-eol
+	# staged changes
+	ds = d --cached
+	# last commit changes
+	dc = d HEAD~1 HEAD
+	# pretty log
+	l = log --pretty='%C(yellow)%h%C(auto)%d %C(reset)%s %C(cyan)(%ad)%C(dim white) - %an%C(reset)' --graph --date=relative --date-order
+	# last 10 commits
+	ll = l -10
 
-	# custom commands
-	amend = "!f() { GIT_COMMITTER_DATE=\"$(git show -s --format=%cI HEAD)\" git commit --amend --no-edit --date \"$(git show -s --format=%aI HEAD)\"; }; f"
+	# change message of last commit, ignore staged files
+	reword = "!f() { GIT_COMMITTER_DATE=\"$(git show -s --format=%cI HEAD)\" git commit --amend --only --date \"$(git show -s --format=%aI HEAD)\" -m \"$1\"; }; f"
+	# add staged files to last commit, preserve message
+	amend = "!f() { GIT_COMMITTER_DATE=\"$(git show -s --format=%cI HEAD)\" git commit --amend --date \"$(git show -s --format=%aI HEAD)\" --no-edit; }; f"
+	# uncommit, keep changes
 	undo = reset --soft HEAD^
+	# unstage files, keep changes
 	unstage = restore --staged
+	# remove files from git, keep on disk
 	untrack = rm --cached
