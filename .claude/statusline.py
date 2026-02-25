@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import json
 import subprocess
 import sys
@@ -8,8 +9,8 @@ RESET = "\033[0m"
 NBSP = "\u00a0"
 
 C_PURPLE = "\033[38;5;140m"
-C_BLUE = "\033[38;5;26m"
-C_GREEN = "\033[38;5;70m"
+C_BLUE = "\033[38;5;69m"
+C_GREEN = "\033[38;5;34m"
 C_YELLOW = "\033[38;5;178m"
 C_RED = "\033[38;5;203m"
 C_GRAY = "\033[38;5;59m"
