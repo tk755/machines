@@ -247,16 +247,16 @@ bindsym $mod+$shift+$olkb25 exec code --new-window --enable-features=UseOzonePla
 
 
 # scripts executed on restart
-exec_always $HOME/.bin/sway/restart
+exec_always $HOME/.config/sway/scripts/restart
 
 # scripts executed on startup
-exec $HOME/.bin/i3/startup
+exec $HOME/.config/i3/scripts/startup
 
 # restart inplace (preserves current layout)
 bindsym $mod+BackSpace reload
 
 # lock screen
-bindsym $mod+$shift+BackSpace exec $HOME/.bin/i3/lock
+bindsym $mod+$shift+BackSpace exec $HOME/.config/i3/scripts/lock
 
 # exit sway (logs out of Wayland session)
 # bindsym $mod+$shift+BackSpace exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'

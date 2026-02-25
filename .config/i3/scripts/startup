@@ -10,4 +10,4 @@ $HOME/.config/dunst/launch.sh
 dropbox start
 
 # launch xss-lock
-xss-lock -- $HOME/.bin/common/lock
+xss-lock -- $HOME/.config/i3/scripts/lock
