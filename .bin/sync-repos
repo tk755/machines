@@ -2,60 +2,54 @@
 
 set -euo pipefail
 
-# config
-REPOS_DIR="$HOME/code"
-
-# patterns to exclude during cloning (via substring matches)
-GITHUB_EXCLUDES=(
-    "dotfiles"
-)
-
 # default flags
-CLONE=false
-INCLUDE_SKIPPED=false
-SHOW_SKIPPED=false
+DRY_RUN=false
 
 print_help() {
     cat <<EOF
-Usage: sync-repos [OPTIONS]
+Usage: sync-repos [DIR] [OPTIONS]
 
 Options:
-    --clone             Clone missing GitHub repositories
-    --show-skipped      Display skipped repositories when cloning
-    --include-skipped   Include skipped repositories when cloning
-    --help              Show this help message
-
-Exclude patterns (used with --clone):
-    ${GITHUB_EXCLUDES[*]}
+    --dry-run   List discovered repositories without syncing
+    --help      Show this help message
 
 Description:
-    Syncs all git repositories in $REPOS_DIR in parallel.
+    Syncs all git repositories found recursively under DIR.
+      - If DIR is omitted, the current working directory is used.
       - Makes no destructive changes, either locally or remotely.
 
-    For each local repository:
+    For each repository:
       - Runs 'git fetch --prune --tags' to update remotes and tags
       - Runs 'git pull --ff-only' to update the current branch
-
-    With --clone (requires the GitHub CLI 'gh'):
-      - Clones any missing public or private repositories from GitHub.
-      - Repositories that are archived or excluded are skipped by default.
-        - Use --show-skipped to display skipped repositories.
-        - Use --include-skipped to clone them anyway.
 EOF
 }
 
-is_excluded() {
-    local repo="$1"
-    for pattern in "${GITHUB_EXCLUDES[@]}"; do
-        case "$repo" in
-            *"$pattern"*) return 0 ;;
+parse_args() {
+    POSITIONAL=()
+    for arg in "$@"; do
+        case "$arg" in
+            --dry-run)  DRY_RUN=true                          ;;
+            --help)     print_help ; exit 0                   ;;
+            -*)         echo "Invalid option: $arg" && exit 1 ;;
+            *)          POSITIONAL+=("$arg")                  ;;
         esac
     done
-    return 1
+
+    if [ ${#POSITIONAL[@]} -gt 1 ]; then
+        echo "Expected at most one positional argument" >&2
+        exit 1
+    fi
+
+    REPOS_DIR=$(realpath "${POSITIONAL[0]:-$PWD}")
+
+    if [ ! -d "$REPOS_DIR" ]; then
+        echo "Not a directory: $REPOS_DIR" >&2
+        exit 1
+    fi
 }
 
 print_status() {
-    local repo="$1"
+    local repo_name="$1"
     local message="$2"
     local emoji="$3"
 
@@ -64,39 +58,41 @@ print_status() {
         "✓" )  color="\e[32m" ;;  # green
         "×" )  color="\e[31m" ;;  # red
         "↓" )  color="\e[36m" ;;  # cyan
-        "+" )  color="\e[33m" ;;  # yellow
         " " )  style="\e[2m"  ;;  # dim
         * )    ;;
     esac
 
     printf " %b%s%b %b%-${REPO_COL_WIDTH}s %s%b\n" \
-        "$color" "$emoji" "$reset" "$style" "$repo" "$message" "$reset"
+        "$color" "$emoji" "$reset" "$style" "$repo_name" "$message" "$reset"
 }
 
-
 pull_repo() {
-    local repo="$1"
-    cd "$repo"
+    local repo_path="$1"
+    local repo_name="${repo_path#"$REPOS_DIR"/}"
+    cd "$repo_path"
 
     # ensure we are on a branch with an upstream
     local branch
     if ! branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null); then
-        print_status "$repo" "No branch" "×"
-        cd "$REPOS_DIR"
+        print_status "$repo_name" "No branch" "×"
         return
     fi
 
     # ensure we have an upstream branch
     if ! git rev-parse --abbrev-ref "@{u}" > /dev/null 2>&1; then
-        print_status "$repo" "No upstream" "×"
-        cd "$REPOS_DIR"
+        print_status "$repo_name" "No upstream" "×"
         return
     fi
 
-    # fetch remote updates (with prune and tags)
-    if ! git fetch --prune --tags --quiet 2>/dev/null; then
-        print_status "$repo" "Remote not found" "×"
-        cd "$REPOS_DIR"
+    # fetch remote updates and prune deleted branches
+    if ! git fetch --prune --quiet 2>/dev/null; then
+        print_status "$repo_name" "Remote not found" "×"
+        return
+    fi
+
+    # fetch tags separately to detect conflicts
+    if ! git fetch --tags --quiet 2>/dev/null; then
+        print_status "$repo_name" "Tag conflict" "×"
         return
     fi
 
@@ -106,140 +102,65 @@ pull_repo() {
     BASE=$(git merge-base @ "@{u}" 2>/dev/null || true)
 
     if [ -z "$BASE" ]; then
-        print_status "$repo" "Unrelated history" "×"
+        print_status "$repo_name" "Unrelated history" "×"
     elif [ "$LOCAL" = "$REMOTE" ]; then
-        print_status "$repo" "Up-to-date" "✓"
+        print_status "$repo_name" "Up-to-date" "✓"
     elif [ "$LOCAL" = "$BASE" ]; then
         if git pull --ff-only --quiet > /dev/null 2>&1; then
-            print_status "$repo" "Pulled" "↓"
+            print_status "$repo_name" "Pulled" "↓"
         else
-            print_status "$repo" "Local changes" "×"
+            print_status "$repo_name" "Local changes" "×"
         fi
     else
-        print_status "$repo" "Diverged" "×"
+        print_status "$repo_name" "Diverged" "×"
     fi
-
-    cd "$REPOS_DIR"
 }
 
-clone_repo() {
-    local repo="$1"
-    local skip_reason="$2"
-    if gh repo clone "$GITHUB_USER/$repo" "$repo" > /dev/null 2>&1; then
-        if [ -n "$skip_reason" ]; then
-            print_status "$repo" "Cloned ($skip_reason)" "+"
-        else
-            print_status "$repo" "Cloned" "+"
+main() {
+    parse_args "$@"
+
+    # discover repos recursively
+    mapfile -t repo_paths < <(find "$REPOS_DIR" -name ".git" -type d -prune -printf '%h\n' | sort)
+
+    if [ ${#repo_paths[@]} -eq 0 ]; then
+        echo "No repositories found in $REPOS_DIR"
+        exit 0
+    fi
+
+    # dry run: list repos and exit
+    if [ "$DRY_RUN" = true ]; then
+        for repo_path in "${repo_paths[@]}"; do
+            echo "${repo_path#"$REPOS_DIR"/}"
+        done
+        exit 0
+    fi
+
+    # calculate column width from relative paths
+    REPO_COL_WIDTH=0
+    for repo_path in "${repo_paths[@]}"; do
+        repo_name="${repo_path#"$REPOS_DIR"/}"
+        len=${#repo_name}
+        if [ "$len" -gt "$REPO_COL_WIDTH" ]; then
+            REPO_COL_WIDTH=$len
         fi
-    else
-        print_status "$repo" "Clone failed" "×"
-        return
-    fi
-}
+    done
+    REPO_COL_WIDTH=$((REPO_COL_WIDTH + 2))
 
-skip_message() {
-    local repo="$1"
-    local skip_reason="$2"
-    if [ "$SHOW_SKIPPED" = true ]; then
-        print_status "$repo" "Skipped ($skip_reason)" " "
-    fi
-}
-
-
-# parse args
-for arg in "$@"; do
-    case "$arg" in
-        --clone)            CLONE=true          ;;
-        --show-skipped)     SHOW_SKIPPED=true   ;;
-        --include-skipped)  INCLUDE_SKIPPED=true ;;
-        --help)             print_help ; exit 0 ;;
-        *) echo "Invalid arg: $arg" && exit 1   ;;
-    esac
-done
-
-# check auth and resolve GitHub user
-if [ "$CLONE" = true ]; then
-    if ! gh auth status > /dev/null 2>&1; then
-        echo "You must run 'gh auth login' first."
-        exit 1
-    fi
-
-    GITHUB_USER=$(gh api user --jq .login 2>/dev/null)
-    if [ -z "$GITHUB_USER" ]; then
-        echo "Failed to determine GitHub user."
-        exit 1
-    fi
-fi
-
-mkdir -p "$REPOS_DIR"
-cd "$REPOS_DIR"
-
-# gather local repos in the format: repo_name\t[skip_reason]\n
-local_repo_data=""
-for dir in "$REPOS_DIR"/*; do
-    [ -d "$dir/.git" ] || continue
-    local_repo_data+=$(basename "$dir")$'\t'$'\n'
-done
-
-# gather GitHub repos in the format: repo_name\t[skip_reason]\n
-github_repo_data=""
-if [ "$CLONE" = true ]; then
-    # fetch all public and private repos for the user from GitHub
-    github_raw=$(gh repo list "$GITHUB_USER" --limit 1000 --json name,isArchived \
-        --jq '.[] | [.name, (.isArchived | tostring | ascii_downcase)] | @tsv')
-
-    # convert into the correct format
-    while IFS=$'\t' read -r repo is_archived; do
-        skip_reason=""
-        if is_excluded "$repo"; then
-            skip_reason="excluded"
-        elif [ "$is_archived" = "true" ]; then
-            skip_reason="archived"
-        fi
-        github_repo_data+="${repo}"$'\t'"${skip_reason}"$'\n'
-    done <<< "$github_raw"
-fi
-
-# merge local and GitHub repos in the format: repo_name\t[skip_reason]\n
-all_repo_data="$local_repo_data"
-while IFS=$'\t' read -r repo reason; do
-    if ! grep -q "^$repo"$'\t' <<< "$local_repo_data"; then
-        all_repo_data+="${repo}"$'\t'"${reason}"$'\n'
-    fi
-done <<< "$github_repo_data"
-
-# calculate column width
-REPO_COL_WIDTH=$(
-    printf '%s\n' "$all_repo_data" |
-    awk -F'\t' '{print length($1)}' |
-    sort -nr |
-    head -n1
-)
-REPO_COL_WIDTH=$((REPO_COL_WIDTH + 2))
-
-# print header
-if [ $CLONE = true ]; then
-    echo -e "\e[1mSyncing repos in $REPOS_DIR and cloning from GitHub\e[0m"
-else
     echo -e "\e[1mSyncing repos in $REPOS_DIR\e[0m"
-fi
 
-# sync each repo in parallel using background jobs
-while IFS=$'\t' read -r repo skip_reason; do
-    (
-        if [ -z "$repo" ]; then
-            exit 0  # skip empty lines
-        elif [ -d "$repo/.git" ]; then
-            pull_repo "$repo"
-        elif [ "$INCLUDE_SKIPPED" = false ] && [ -n "$skip_reason" ]; then
-            skip_message "$repo" "$skip_reason"
-        else
-            clone_repo "$repo" "$skip_reason"
-        fi
-    ) &
-done <<< "$all_repo_data"
+    # export for subshells
+    export REPOS_DIR REPO_COL_WIDTH
+    export -f pull_repo print_status
 
-# wait for all background jobs to finish
-wait
+    # sync each repo in parallel using background jobs
+    for repo_path in "${repo_paths[@]}"; do
+        pull_repo "$repo_path" &
+    done
 
-echo -e "\e[1mDone\e[0m"
+    # wait for all background jobs to finish
+    wait
+
+    echo -e "\e[1mDone\e[0m"
+}
+
+main "$@"
