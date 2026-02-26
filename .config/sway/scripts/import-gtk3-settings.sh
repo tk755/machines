@@ -3,7 +3,7 @@
 
 # gtk-3 config path
 config="$HOME/.config/gtk-3.0/settings.ini"
-if [ ! -f "$config" ]; then exit 1; fi
+if [ ! -f "$config" ]; then return 1; fi
 
 # extract gtk-3 settings
 gtk_theme="$(grep 'gtk-theme-name' "$config" | sed 's/.*\s*=\s*//')"

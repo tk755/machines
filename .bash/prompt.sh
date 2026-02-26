@@ -116,7 +116,7 @@ function git_segment {
         status="${status% }"
     fi
 
-	echo -e "${1}${branch}${2}${status}"
+	echo "${branch}${status}"
 }
 
 # returns virtual environment
