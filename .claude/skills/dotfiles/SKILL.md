@@ -1,7 +1,7 @@
 ---
 description: Sync local dotfile changes to the dotfiles repository
 disable-model-invocation: true
-allowed-tools: Bash, Read, Grep, Glob, Skill
+allowed-tools: Skill
 ---
 
 ## Instructions
