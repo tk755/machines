@@ -101,7 +101,7 @@ backup_local_changes() {
         esac
 
         # save local files that differ with HEAD version
-        if ! diff -q "$full_path" <(dotfiles show HEAD:"$file") > /dev/null 2>&1; then
+        if ! diff -q "$full_path" <(dotfiles show HEAD:"$file") &>/dev/null; then
             local backup_path="$BACKUP_DIR/$file"
             mkdir -p "$(dirname "$backup_path")"
             cp "$full_path" "$backup_path"
@@ -131,7 +131,7 @@ print_local_changes() {
     fi
 
     echo
-    if [ $FORCE = true ]; then
+    if [ "$FORCE" = true ]; then
         echo "Local changes overwritten (backup in $BACKUP_DIR):"
         local color="\e[31m"
     else
@@ -224,7 +224,7 @@ main() {
     echo
     print_bold "Bootstrap complete"
     local sparse_info
-    sparse_info="$(dotfiles status | grep -oP '(?<=sparse checkout with ).*?(?=\.$)')"
+    sparse_info="$(dotfiles status | sed -n 's/.*sparse checkout with \(.*\)\./\1/p')"
     if [ "$HEADLESS" = true ]; then
         sparse_info="$sparse_info (headless)"
     fi

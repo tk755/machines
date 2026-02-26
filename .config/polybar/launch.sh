@@ -11,7 +11,7 @@ function stop() {
         # terminate all polybar instances
         pkill polybar
         # wait for process to shut down
-        while pgrep -u $UID -x polybar > /dev/null ; do 
+        while pgrep -u "$UID" -x polybar > /dev/null; do
             sleep 0.1 
         done
     fi

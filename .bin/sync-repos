@@ -35,7 +35,7 @@ parse_args() {
         esac
     done
 
-    if [ ${#POSITIONAL[@]} -gt 1 ]; then
+    if [ "${#POSITIONAL[@]}" -gt 1 ]; then
         echo "Expected at most one positional argument" >&2
         exit 1
     fi
@@ -106,7 +106,7 @@ pull_repo() {
     elif [ "$LOCAL" = "$REMOTE" ]; then
         print_status "$repo_name" "Up-to-date" "✓"
     elif [ "$LOCAL" = "$BASE" ]; then
-        if git pull --ff-only --quiet > /dev/null 2>&1; then
+        if git pull --ff-only --quiet &>/dev/null; then
             print_status "$repo_name" "Pulled" "↓"
         else
             print_status "$repo_name" "Local changes" "×"
@@ -120,7 +120,7 @@ main() {
     parse_args "$@"
 
     # discover repos recursively
-    mapfile -t repo_paths < <(find "$REPOS_DIR" -name ".git" -type d -prune -printf '%h\n' | sort)
+    mapfile -t repo_paths < <(find "$REPOS_DIR" -name ".git" -type d -prune | sed 's|/\.git$||' | sort)
 
     if [ ${#repo_paths[@]} -eq 0 ]; then
         echo "No repositories found in $REPOS_DIR"

@@ -4,13 +4,13 @@
 # to fix some common issues related to power management.
 
 # ensure root user
-if [ $EUID -ne 0 ]; then
+if [[ $EUID -ne 0 ]]; then
     echo -e "\e[1m\e[31mYou must be root to run this script\e[0m"
     exit 1
 fi
 
 # ensure correct host
-if [ $(hostname) != "kawasaki" ]; then
+if [[ "$(hostname)" != "kawasaki" ]]; then
     echo -e "\e[1m\e[31mThis script is only for the host: kawasaki\e[0m"
     exit 1
 fi

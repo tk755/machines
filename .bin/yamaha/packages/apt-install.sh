@@ -2,7 +2,7 @@
 # This script installs packages using the apt package manager.
 
 # Verify that script is being executed by root
-if [ $USER != 'root' ]; then
+if [[ "$USER" != "root" ]]; then
     echo -e You must be "\e[1m\e[31mroot\e[0m" to run this script
     exit
 fi
@@ -30,7 +30,7 @@ function test_install {
 }
 
 DEB_CODENAME=$(lsb_release --codename --short)
-SCRIPT_DIR=$(dirname $0)
+SCRIPT_DIR=$(dirname "$0")
 cd ~
 
 # Install packages via apt
@@ -40,7 +40,7 @@ echo -e "\e[1m\e[34mInstalling packages via apt ...\e[0m"
 # Install packages required to install applications below
 apt-get -qq install wget apt-transport-https ca-certificates curl software-properties-common gnupg-agent python3-pip -y || exit
 # Install packages from text file
-apt-get -qq install `tr '\r\n' ' ' < ${SCRIPT_DIR}/packages.txt` -y || exit
+apt-get -qq install $(tr '\r\n' ' ' < "${SCRIPT_DIR}/packages.txt") -y || exit
 
 # Install Docker
 # https://docs.docker.com/engine/install/debian/
@@ -51,7 +51,7 @@ if requires_install "$cmd" "$pkg" ; then
     curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
     add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
     apt-get -qq update && apt-get install docker-ce docker-ce-cli containerd.io -y
-    usermod -aG docker $USER
+    usermod -aG docker "${SUDO_USER:-$USER}"
 
     test_install "$cmd" "$pkg"
 fi
@@ -89,7 +89,7 @@ if requires_install "$cmd" "$pkg" ; then
     # unsure why this is needed
     apt-get install i3 -y
 
-    cd $CWD
+    cd "$CWD"
 
     test_install "$cmd" "$pkg"
 fi

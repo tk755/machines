@@ -4,7 +4,7 @@
 # It is useful for reconnecting to wifi.
 
 # ensure root user
-if [ $EUID -ne 0 ]; then
+if [[ $EUID -ne 0 ]]; then
     echo -e "\e[1m\e[31mYou must be root to run this script\e[0m"
     exit 1
 fi

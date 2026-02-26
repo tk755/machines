@@ -62,7 +62,7 @@ function exit_segment {
         es='\342\234\227' # x cross
     fi
 
-    echo ${ec}${es}${ANSI_DEFAULT}
+    echo "${ec}${es}${ANSI_DEFAULT}"
 }
 
 # returns padded command history number
@@ -124,12 +124,12 @@ function env_segment {
     local env
 
     if [[ -n $VIRTUAL_ENV ]]; then
-        env=$(basename $VIRTUAL_ENV)
+        env=$(basename "$VIRTUAL_ENV")
     elif [[ -n $CONDA_DEFAULT_ENV ]]; then
-        env=$(basename $CONDA_DEFAULT_ENV)
+        env=$(basename "$CONDA_DEFAULT_ENV")
     fi
 
-    echo ${env}
+    echo "${env}"
 }
 
 function prompt_symbol {
@@ -142,7 +142,7 @@ function prompt_symbol {
         prompt="#"
     fi
 
-    echo ${prompt}
+    echo "${prompt}"
 }
 
 # sets $PS1 and resets the timer
