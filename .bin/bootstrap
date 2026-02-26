@@ -21,6 +21,13 @@ HEADLESS_EXCLUDES=(
 HEADLESS=false
 FORCE=false
 
+# auto-detect headless environment (WSL or no DISPLAY)
+if grep -qi microsoft /proc/version 2>/dev/null; then
+    HEADLESS=true
+elif [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then
+    HEADLESS=true
+fi
+
 # global variables
 PROCESS_ICON="\e[36m⮞\e[0m"
 FINISH_ICON="\e[32m✓\e[0m"
@@ -30,7 +37,7 @@ print_help() {
 Usage: bootstrap [OPTIONS]
 
 Options:
-    --headless      Exclude GUI-related dotfiles (for servers or WSL)
+    --headless      Exclude GUI-related dotfiles (for WSL or servers)
     --force         Overwrite local conflicts (destructive)
     --help          Show this help message
 
@@ -43,8 +50,8 @@ Description:
       - Removes the previous repo and its tracked files.
 
     Uses sparse checkout to limit files checked out into $HOME.
-      - By default, all files are included.
       - Use --headless to exclude GUI-related files.
+      - Auto-detected on WSL and when DISPLAY is unset.
 
     Conflicting files are backed up to $BACKUP_DIR.
       - By default, these files are restored automatically.
@@ -125,7 +132,7 @@ print_local_changes() {
 
     echo
     if [ $FORCE = true ]; then
-        echo "Local changes overwritten:"
+        echo "Local changes overwritten (backup in $BACKUP_DIR):"
         local color="\e[31m"
     else
         echo "Local changes preserved (overwrite with --force):"
@@ -216,7 +223,12 @@ main() {
     print_local_changes
     echo
     print_bold "Bootstrap complete"
-    echo -e " $FINISH_ICON $(dotfiles status | grep -oP '(?<=sparse checkout with ).*?(?=\.$)')"
+    local sparse_info
+    sparse_info="$(dotfiles status | grep -oP '(?<=sparse checkout with ).*?(?=\.$)')"
+    if [ "$HEADLESS" = true ]; then
+        sparse_info="$sparse_info (headless)"
+    fi
+    echo -e " $FINISH_ICON $sparse_info"
     echo -e " $FINISH_ICON Last commit $(dotfiles log -1 --format=%cr)\e[2m - $(dotfiles log -1 --format=%s)\e[0m"
 }
 
