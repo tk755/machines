@@ -1,0 +1,3 @@
+disable=SC2148 # missing shebang on sourced files
+disable=SC2155 # declare and assign local separately
+disable=SC2034 # unused variable
