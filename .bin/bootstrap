@@ -37,11 +37,11 @@ print_help() {
 Usage: bootstrap [OPTIONS]
 
 Options:
-    --headless      Exclude GUI-related dotfiles (for WSL or servers)
+    --all           Check out all files (override headless detection)
     --force         Overwrite local conflicts (destructive)
     --help          Show this help message
 
-Exclude patterns (--headless):
+Headless exclude patterns:
     ${HEADLESS_EXCLUDES[*]}
 
 Description:
@@ -49,9 +49,9 @@ Description:
       - Clones the bare repository to $DOTFILES_DIR.
       - Removes the previous repo and its tracked files.
 
-    Uses sparse checkout to limit files checked out into $HOME.
-      - Use --headless to exclude GUI-related files.
-      - Auto-detected on WSL and when DISPLAY is unset.
+    Uses sparse checkout to exclude GUI-related files in headless environments.
+      - Auto-detected on WSL and when DISPLAY is not set.
+      - Use --all to override and check out all files.
 
     Conflicting files are backed up to $BACKUP_DIR.
       - By default, these files are restored automatically.
@@ -62,7 +62,7 @@ EOF
 parse_args() {
     for arg in "$@"; do
         case "$arg" in
-            --headless) HEADLESS=true               ;;
+            --all)      HEADLESS=false              ;;
             --force)    FORCE=true                  ;;
             --help)     print_help && exit 0        ;;
             *) echo "Invalid arg: $arg" && exit 1   ;;
