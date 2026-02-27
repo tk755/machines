@@ -3,6 +3,7 @@
 # make Ctrl+Backspace delete words backward
 "\C-h": backward-kill-word # fix for modern terminals: WSL, GNOME, Konsole, xterm, etc.
 "\C-?": backward-kill-word # fix for old terminals: rxvt, urxvt, etc.
+"\C-w": backward-kill-word # default unix-word-rubout only stops at spaces
 
 # show completion matches immediately (no double-tab needed)
 set show-all-if-ambiguous on
