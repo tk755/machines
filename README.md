@@ -34,12 +34,15 @@ dotfiles push
 
 ## Scripts
 
-Scripts intended to be invoked by the user are on `$PATH`:
-- `~/.bin/` — shared across all machines
-- `~/.bin/<hostname>/` — specific to a particular machine (takes precedence over `~/.bin/`)
-
-Scripts not intended to be invoked directly are elsewhere:
+User-level scripts are organized by scope:
+- `~/.bin/` — user-invoked scripts, on `$PATH`
+- `~/.bin/<hostname>/` — host-specific scripts, invoked via the hostname as a command
 - `~/.bin/common/` — shared helpers called by other scripts
-- `~/.config/**` — application-specific scripts live alongside their configs (e.g. `~/.config/i3/scripts/`)
+- `~/.config/**` — application-specific scripts alongside their configs
 
-Scripts on `$PATH` never have file extensions; all others always do.
+Use the hostname as a command to invoke host-specific scripts:
+
+```bash
+suzuki install        # run ~/.bin/suzuki/install
+suzuki                # list available commands
+```
