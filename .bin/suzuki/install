@@ -18,7 +18,9 @@ set -euo pipefail
 # Power:      power-profiles-daemon (not tlp — AMD/Framework conflict)
 # Snapshots:  snapper + snap-pac (pacman hooks, no timeline)
 #
-# Usage: boot Arch ISO, connect Wi-Fi, then:
+# Boot the Arch ISO, then run:
+#   iwctl station wlan0 connect "YourNetworkName"
+#   pacman -Sy git
 #   git clone https://github.com/tk755/dotfiles /tmp/dotfiles
 #   /tmp/dotfiles/.bin/suzuki/install
 
@@ -30,14 +32,10 @@ CRYPT_DEV="/dev/mapper/${CRYPT_NAME}"
 MOUNT="/mnt"
 BTRFS_OPTS="compress=zstd,noatime,discard=async"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CURRENT_STEP=""
 
 msg() {
-    CURRENT_STEP="$1"
     printf '\033[1;35m%s\033[0m\n' "$1"
 }
-
-trap 'printf "\033[1;31mFailed: %s\033[0m\n" "$CURRENT_STEP" >&2' ERR
 
 precheck() {
     if [[ ! -d /run/archiso ]]; then
@@ -88,9 +86,10 @@ get_password() {
     done
 }
 
-select_mirrors() {
+update_mirrors() {
     # https://wiki.archlinux.org/title/Reflector
-    reflector --country US --protocol https --age 12 --sort rate --latest 10 \
+    # 10 freshest US mirrors, sorted by download speed
+    reflector --country US --protocol https --age 24 --latest 10 --sort rate \
         --save /etc/pacman.d/mirrorlist
 }
 
@@ -100,12 +99,15 @@ format_nvme() {
         echo "NVMe already using 4K sectors, skipping"
         return
     fi
+    # LBA format 1 = 4096-byte sectors (matches physical sector size)
     nvme format "$DRIVE" --lbaf=1
 }
 
 partition() {
     # https://wiki.archlinux.org/title/Installation_guide#Partition_the_disks
+    # wipe all filesystem signatures from the drive
     wipefs -af "$DRIVE"
+    # 1G EFI + rest as linux root
     sfdisk "$DRIVE" <<EOF
 label: gpt
 size=1G, type=uefi
@@ -116,9 +118,11 @@ EOF
 encrypt() {
     # https://wiki.archlinux.org/title/Dm-crypt/Device_encryption#Encryption_options_for_LUKS_mode
     # defaults: LUKS2, aes-xts-plain64, argon2id (no GRUB PBKDF2 limitation with systemd-boot)
+    # read passphrase from stdin to avoid interactive prompt
     printf '%s' "$PASSWORD" | cryptsetup luksFormat -q --key-file=- "$ROOT_PART"
     # https://wiki.archlinux.org/title/Dm-crypt/Specialties#Discard/TRIM_support_for_solid_state_drives_(SSD)
     # without allow-discards, TRIM/discard requests are blocked by the crypt layer
+    # --persistent stores allow-discards in the LUKS header permanently
     printf '%s' "$PASSWORD" | cryptsetup open --allow-discards --persistent --key-file=- "$ROOT_PART" "$CRYPT_NAME"
 }
 
@@ -128,6 +132,7 @@ create_filesystems() {
     mkfs.fat -F 32 "$EFI_PART"
     mkfs.btrfs -f "$CRYPT_DEV"
 
+    # temporarily mount the raw volume to create subvolumes
     mount "$CRYPT_DEV" "$MOUNT"
     local subvols=(@ @home @snapshots @var_log @var_cache)
     for sv in "${subvols[@]}"; do
@@ -138,6 +143,7 @@ create_filesystems() {
 
 mount_filesystems() {
     # https://wiki.archlinux.org/title/Btrfs#Mounting_subvolumes
+    # root subvol first, then nested mountpoints
     mount -o "${BTRFS_OPTS},subvol=@" "$CRYPT_DEV" "$MOUNT"
     mkdir -p "${MOUNT}"/{home,.snapshots,var/log,var/cache,boot}
     mount -o "${BTRFS_OPTS},subvol=@home" "$CRYPT_DEV" "${MOUNT}/home"
@@ -150,6 +156,7 @@ mount_filesystems() {
 install_base() {
     # https://wiki.archlinux.org/title/Installation_guide#Install_essential_packages
     # cryptsetup and btrfs-progs are not in base — without them the system won't boot
+    # -K initializes an empty pacman keyring in the new root
     pacstrap -K "$MOUNT" \
         base base-devel linux linux-firmware amd-ucode \
         cryptsetup btrfs-progs \
@@ -157,28 +164,9 @@ install_base() {
         nano git man-db man-pages
 }
 
-install_packages() {
-    # https://wiki.archlinux.org/title/Pacman#Installing_packages
-    # --needed skips already-installed packages (idempotent)
-
-    # packages required by install and post-install scripts
-    # udisks2: fwupd ESP detection, efibootmgr: fwupd UEFI firmware entries
-    arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
-        bluez bluez-utils \
-        power-profiles-daemon \
-        pipewire pipewire-audio pipewire-pulse pipewire-alsa wireplumber \
-        fwupd udisks2 efibootmgr \
-        snapper snap-pac
-
-    # user packages
-    local pkg_file="${SCRIPT_DIR}/packages"
-    if [[ -f "$pkg_file" ]]; then
-        arch-chroot "$MOUNT" pacman -S --needed --noconfirm - < "$pkg_file"
-    fi
-}
-
 generate_fstab() {
     # https://wiki.archlinux.org/title/Installation_guide#Fstab
+    # -U uses UUIDs (stable across device reordering)
     genfstab -U "$MOUNT" >> "${MOUNT}/etc/fstab"
 
     # https://wiki.archlinux.org/title/Btrfs#Mounting_subvolumes
@@ -188,6 +176,7 @@ generate_fstab() {
 
 deploy_configs() {
     # deploy static configs from root/
+    # -T treats destination as target, not parent directory (merges root/ into /mnt/)
     cp -rT "${SCRIPT_DIR}/root/" "${MOUNT}/"
 
     # generate boot entry with LUKS partition UUID
@@ -216,6 +205,7 @@ configure_system() {
     # https://wiki.archlinux.org/title/Installation_guide#Time
     # timedatectl/hostnamectl/localectl require dbus, unavailable in chroot
     arch-chroot "$MOUNT" ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
+    # sync hardware clock from system time
     arch-chroot "$MOUNT" hwclock --systohc
 
     # https://wiki.archlinux.org/title/Locale#Generating_locales
@@ -229,6 +219,7 @@ configure_system() {
     # https://wiki.archlinux.org/title/Installation_guide#Root_password
     # https://wiki.archlinux.org/title/Users_and_groups#User_management
     arch-chroot "$MOUNT" useradd -m -G wheel -s /bin/bash tk
+    # set root and tk passwords in bulk (user:pass format via stdin)
     printf 'root:%s\ntk:%s\n' "$PASSWORD" "$PASSWORD" | arch-chroot "$MOUNT" chpasswd
 
     # https://wiki.archlinux.org/title/Sudo#Configuration
@@ -237,10 +228,50 @@ configure_system() {
         's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
     # https://wiki.archlinux.org/title/Systemd-boot#Installation
+    # install systemd-boot EFI binaries to the ESP
     arch-chroot "$MOUNT" bootctl install
+
+    # enable core services
+    arch-chroot "$MOUNT" systemctl enable \
+        NetworkManager \
+        systemd-timesyncd.service \
+        rfkill-before-sleep.service
+}
+
+configure_mirrors() {
+    # https://wiki.archlinux.org/title/Reflector#systemd_service
+    # weekly mirror refresh via systemd timer
+    # config deployed by deploy_configs (reflector.conf already in place)
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm reflector
+    arch-chroot "$MOUNT" systemctl enable reflector.timer
+}
+
+configure_audio() {
+    # https://wiki.archlinux.org/title/PipeWire#Installation
+    # pipewire-pulse replaces pulseaudio, pipewire-alsa provides alsa compatibility
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
+        pipewire pipewire-audio pipewire-pulse pipewire-alsa wireplumber
+    # https://wiki.archlinux.org/title/Chroot#Usage
+    # --global enables for all users via /etc/systemd/user/ (no D-Bus needed in chroot)
+    arch-chroot "$MOUNT" systemctl --global enable \
+        pipewire.socket pipewire-pulse.socket wireplumber.service
+}
+
+configure_bluetooth() {
+    # https://wiki.archlinux.org/title/Bluetooth#Installation
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm bluez bluez-utils
+    arch-chroot "$MOUNT" systemctl enable bluetooth.service
+}
+
+configure_power() {
+    # https://wiki.archlinux.org/title/Power_profiles_daemon
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm power-profiles-daemon
+    arch-chroot "$MOUNT" systemctl enable power-profiles-daemon
 }
 
 configure_snapper() {
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm snapper snap-pac
+
     # https://wiki.archlinux.org/title/Snapper#Configuration_of_snapper_and_mount_point
     # snapper create-config creates a .snapshots child subvolume inside @
     # replace with our top-level @snapshots (survives rollback, already in fstab)
@@ -266,32 +297,20 @@ configure_snapper() {
     if [[ -f "${MOUNT}/etc/updatedb.conf" ]]; then
         sed -i '/^PRUNENAMES/s/"$/ .snapshots"/' "${MOUNT}/etc/updatedb.conf"
     fi
+
+    arch-chroot "$MOUNT" systemctl enable snapper-cleanup.timer
 }
 
-enable_services() {
-    # https://wiki.archlinux.org/title/NetworkManager#Using_iwd_as_the_Wi-Fi_backend
-    # https://wiki.archlinux.org/title/Systemd-timesyncd
-    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Suspend
-    # https://wiki.archlinux.org/title/Bluetooth#Installation
-    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Power_management
-    # do not enable iwd.service — NetworkManager manages iwd internally
-    arch-chroot "$MOUNT" systemctl enable \
-        NetworkManager \
-        systemd-timesyncd.service \
-        rfkill-before-sleep.service \
-        bluetooth.service \
-        power-profiles-daemon \
-        snapper-cleanup.timer
-
-    # https://wiki.archlinux.org/title/PipeWire#Installation
-    # --global enables for all users via /etc/systemd/user/ (no D-Bus needed in chroot)
-    # pipewire-pulse replaces pulseaudio
-    arch-chroot "$MOUNT" systemctl --global enable \
-        pipewire.socket pipewire-pulse.socket wireplumber.service
+install_user_packages() {
+    local pkg_file="${SCRIPT_DIR}/packages"
+    if [[ -f "$pkg_file" ]]; then
+        # read package names from file via stdin
+        arch-chroot "$MOUNT" pacman -S --needed --noconfirm - < "$pkg_file"
+    fi
 }
 
 deploy_dotfiles() {
-    # run bootstrap as tk inside chroot to deploy dotfiles
+    # copy bootstrap into chroot, run as tk, then clean up
     cp "${SCRIPT_DIR}/../bootstrap" "${MOUNT}/home/tk/bootstrap"
     arch-chroot "$MOUNT" su - tk -c '/home/tk/bootstrap --all --force'
     rm -f "${MOUNT}/home/tk/bootstrap"
@@ -299,16 +318,17 @@ deploy_dotfiles() {
 
 cleanup() {
     umount -R "$MOUNT"
+    unset PASSWORD
 }
 
 main() {
     precheck
-    msg "tk's suzuki installer"
+    msg "tk's suzuki install"
     echo "WARNING: this will wipe ${DRIVE}"
     get_password
 
-    msg "Selecting mirrors"
-    select_mirrors
+    msg "Updating mirrors"
+    update_mirrors
 
     msg "Formatting NVMe"
     format_nvme
@@ -327,24 +347,28 @@ main() {
     generate_fstab
     msg "Deploying configs"
     deploy_configs
-
-    msg "Installing packages"
-    install_packages
     msg "Configuring system"
     configure_system
-    msg "Configuring snapper"
-    configure_snapper
-    msg "Enabling services"
-    enable_services
 
+    msg "Setting up mirrors"
+    configure_mirrors
+    msg "Setting up audio"
+    configure_audio
+    msg "Setting up bluetooth"
+    configure_bluetooth
+    msg "Setting up power management"
+    configure_power
+    msg "Setting up snapper"
+    configure_snapper
+
+    msg "Installing user packages"
+    install_user_packages
     msg "Deploying dotfiles"
     deploy_dotfiles
 
-    unset PASSWORD
     cleanup
     echo
-    msg "Installation complete."
-    msg "Reboot, then run: ~/.bin/suzuki/post-install"
+    msg "Installation complete. Reboot, then run: suzuki post-install"
 }
 
 main "$@"
