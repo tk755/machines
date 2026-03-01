@@ -24,11 +24,13 @@
       "Bash(wget *)"
     ]
   },
+  "model": "Opus",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.py",
     "padding": 0
   },
-  "model": "opus",
-  "effortLevel": "high"
+  "enabledPlugins": {
+    "skill-creator@claude-plugins-official": true
+  }
 }
