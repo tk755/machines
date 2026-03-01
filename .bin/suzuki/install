@@ -74,13 +74,18 @@ precheck() {
     fi
 }
 
-confirm() {
-    echo "WARNING: this will wipe ${DRIVE} and install Arch Linux"
-    read -rp "Type YES to continue: " response
-    if [[ "$response" != "YES" ]]; then
-        echo "Aborted"
-        exit 1
-    fi
+get_password() {
+    # password for LUKS, root, and tk
+    while true; do
+        read -rsp "Password: " PASSWORD
+        echo
+        read -rsp "Confirm: " confirm
+        echo
+        if [[ "$PASSWORD" == "$confirm" ]]; then
+            break
+        fi
+        echo "Passwords do not match, try again"
+    done
 }
 
 select_mirrors() {
@@ -111,10 +116,10 @@ EOF
 encrypt() {
     # https://wiki.archlinux.org/title/Dm-crypt/Device_encryption#Encryption_options_for_LUKS_mode
     # defaults: LUKS2, aes-xts-plain64, argon2id (no GRUB PBKDF2 limitation with systemd-boot)
-    cryptsetup luksFormat "$ROOT_PART"
+    printf '%s' "$PASSWORD" | cryptsetup luksFormat -q --key-file=- "$ROOT_PART"
     # https://wiki.archlinux.org/title/Dm-crypt/Specialties#Discard/TRIM_support_for_solid_state_drives_(SSD)
     # without allow-discards, TRIM/discard requests are blocked by the crypt layer
-    cryptsetup open --allow-discards --persistent "$ROOT_PART" "$CRYPT_NAME"
+    printf '%s' "$PASSWORD" | cryptsetup open --allow-discards --persistent --key-file=- "$ROOT_PART" "$CRYPT_NAME"
 }
 
 create_filesystems() {
@@ -222,11 +227,9 @@ configure_system() {
     arch-chroot "$MOUNT" mkinitcpio -P
 
     # https://wiki.archlinux.org/title/Installation_guide#Root_password
-    arch-chroot "$MOUNT" passwd
-
     # https://wiki.archlinux.org/title/Users_and_groups#User_management
     arch-chroot "$MOUNT" useradd -m -G wheel -s /bin/bash tk
-    arch-chroot "$MOUNT" passwd tk
+    printf 'root:%s\ntk:%s\n' "$PASSWORD" "$PASSWORD" | arch-chroot "$MOUNT" chpasswd
 
     # https://wiki.archlinux.org/title/Sudo#Configuration
     # sed, not visudo — known-good syntax, single uncomment operation
@@ -301,7 +304,8 @@ cleanup() {
 main() {
     precheck
     msg "tk's suzuki installer"
-    confirm
+    echo "WARNING: this will wipe ${DRIVE}"
+    get_password
 
     msg "Selecting mirrors"
     select_mirrors
@@ -336,6 +340,7 @@ main() {
     msg "Deploying dotfiles"
     deploy_dotfiles
 
+    unset PASSWORD
     cleanup
     echo
     msg "Installation complete."
