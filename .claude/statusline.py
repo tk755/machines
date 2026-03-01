@@ -8,7 +8,7 @@ from pathlib import Path
 RESET = "\033[0m"
 NBSP = "\u00a0"
 
-C_PURPLE = "\033[38;5;140m"
+C_PURPLE = "\033[38;5;141m"
 C_BLUE = "\033[38;5;69m"
 C_GREEN = "\033[38;5;34m"
 C_YELLOW = "\033[38;5;178m"
@@ -58,7 +58,7 @@ def git_branch(data: dict) -> str:
                 cwd=cwd, capture_output=True, text=True, timeout=2,
             )
             if result.returncode == 0:
-                return result.stdout.strip()
+                return f" {result.stdout.strip()}"
         except (OSError, subprocess.TimeoutExpired):
             pass
     return ""
