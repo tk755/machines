@@ -1,0 +1,324 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Arch Linux install — suzuki
+#
+# Hardware
+#   Framework 13 (AMD Ryzen 5 7640U)
+#   64GB DDR5, 2TB WD Black SN850X (4K native), MT7921 Wi-Fi
+#   13.5" 2880x1920 120Hz (BOE0CB4), Radeon 760M (RDNA 3)
+#
+# Filesystem: btrfs, subvolumes: @ @home @snapshots @var_log @var_cache
+# Encryption: LUKS2, sd-encrypt (not busybox — supports LUKS2 + TPM2)
+# Bootloader: systemd-boot
+# Swap:       zram ram/2 (no swap partition)
+# Desktop:    sway (Wayland)
+# Network:    NetworkManager + iwd backend (MT7921 stability)
+# Power:      power-profiles-daemon (not tlp — AMD/Framework conflict)
+# Snapshots:  snapper + snap-pac (pacman hooks, no timeline)
+#
+# Usage: boot Arch ISO, connect Wi-Fi, then:
+#   git clone https://github.com/tk755/dotfiles /tmp/dotfiles
+#   /tmp/dotfiles/.bin/suzuki/install
+
+DRIVE="/dev/nvme0n1"
+EFI_PART="${DRIVE}p1"
+ROOT_PART="${DRIVE}p2"
+CRYPT_NAME="cryptroot"
+CRYPT_DEV="/dev/mapper/${CRYPT_NAME}"
+MOUNT="/mnt"
+BTRFS_OPTS="compress=zstd,noatime,discard=async"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+precheck() {
+    if [[ ! -d /run/archiso ]]; then
+        echo "error: must run from the Arch ISO" >&2
+        exit 1
+    fi
+    if (( EUID != 0 )); then
+        echo "error: must run as root" >&2
+        exit 1
+    fi
+    # https://wiki.archlinux.org/title/Installation_guide#Verify_the_boot_mode
+    if [[ ! -f /sys/firmware/efi/fw_platform_size ]]; then
+        echo "error: not booted in UEFI mode" >&2
+        exit 1
+    fi
+    if [[ "$(< /sys/firmware/efi/fw_platform_size)" != "64" ]]; then
+        echo "error: UEFI is not 64-bit" >&2
+        exit 1
+    fi
+    if [[ ! -b "$DRIVE" ]]; then
+        echo "error: drive ${DRIVE} not found" >&2
+        exit 1
+    fi
+    if ! ping -c 1 -W 3 ping.archlinux.org &>/dev/null; then
+        echo "error: no internet — connect with iwctl first" >&2
+        exit 1
+    fi
+    if [[ ! -f "${SCRIPT_DIR}/../bootstrap" ]]; then
+        echo "error: bootstrap script not found at ${SCRIPT_DIR}/../bootstrap" >&2
+        exit 1
+    fi
+    if [[ ! -f "${SCRIPT_DIR}/packages" ]]; then
+        echo "warning: user packages file not found at ${SCRIPT_DIR}/packages, only script dependencies will be installed" >&2
+    fi
+}
+
+confirm() {
+    echo "WARNING: this will wipe ${DRIVE} and install Arch Linux"
+    read -rp "Type YES to continue: " response
+    if [[ "$response" != "YES" ]]; then
+        echo "Aborted"
+        exit 1
+    fi
+}
+
+select_mirrors() {
+    # https://wiki.archlinux.org/title/Reflector
+    reflector --country US --protocol https --age 12 --sort rate --latest 10 \
+        --save /etc/pacman.d/mirrorlist
+}
+
+format_nvme() {
+    # https://wiki.archlinux.org/title/NVMe#Sector_size
+    if nvme id-ns "$DRIVE" -H | grep 'in use' | grep -q '4096'; then
+        echo "NVMe already using 4K sectors, skipping"
+        return
+    fi
+    nvme format "$DRIVE" --lbaf=1
+}
+
+partition() {
+    # https://wiki.archlinux.org/title/Installation_guide#Partition_the_disks
+    wipefs -af "$DRIVE"
+    sfdisk "$DRIVE" <<EOF
+label: gpt
+size=1G, type=uefi
+type=linux
+EOF
+}
+
+encrypt() {
+    # https://wiki.archlinux.org/title/Dm-crypt/Device_encryption#Encryption_options_for_LUKS_mode
+    # defaults: LUKS2, aes-xts-plain64, argon2id (no GRUB PBKDF2 limitation with systemd-boot)
+    cryptsetup luksFormat "$ROOT_PART"
+    # https://wiki.archlinux.org/title/Dm-crypt/Specialties#Discard/TRIM_support_for_solid_state_drives_(SSD)
+    # without allow-discards, TRIM/discard requests are blocked by the crypt layer
+    cryptsetup open --allow-discards --persistent "$ROOT_PART" "$CRYPT_NAME"
+}
+
+create_filesystems() {
+    # https://wiki.archlinux.org/title/EFI_system_partition#Format_the_partition
+    # https://wiki.archlinux.org/title/Btrfs#Creating_a_file_system
+    mkfs.fat -F 32 "$EFI_PART"
+    mkfs.btrfs -f "$CRYPT_DEV"
+
+    mount "$CRYPT_DEV" "$MOUNT"
+    local subvols=(@ @home @snapshots @var_log @var_cache)
+    for sv in "${subvols[@]}"; do
+        btrfs subvolume create "${MOUNT}/${sv}"
+    done
+    umount "$MOUNT"
+}
+
+mount_filesystems() {
+    # https://wiki.archlinux.org/title/Btrfs#Mounting_subvolumes
+    mount -o "${BTRFS_OPTS},subvol=@" "$CRYPT_DEV" "$MOUNT"
+    mkdir -p "${MOUNT}"/{home,.snapshots,var/log,var/cache,boot}
+    mount -o "${BTRFS_OPTS},subvol=@home" "$CRYPT_DEV" "${MOUNT}/home"
+    mount -o "${BTRFS_OPTS},subvol=@snapshots" "$CRYPT_DEV" "${MOUNT}/.snapshots"
+    mount -o "${BTRFS_OPTS},subvol=@var_log" "$CRYPT_DEV" "${MOUNT}/var/log"
+    mount -o "${BTRFS_OPTS},subvol=@var_cache" "$CRYPT_DEV" "${MOUNT}/var/cache"
+    mount "$EFI_PART" "${MOUNT}/boot"
+}
+
+install_base() {
+    # https://wiki.archlinux.org/title/Installation_guide#Install_essential_packages
+    # cryptsetup and btrfs-progs are not in base — without them the system won't boot
+    pacstrap -K "$MOUNT" \
+        base base-devel linux linux-firmware amd-ucode \
+        cryptsetup btrfs-progs \
+        networkmanager iwd \
+        nano git man-db man-pages
+}
+
+install_packages() {
+    # https://wiki.archlinux.org/title/Pacman#Installing_packages
+    # --needed skips already-installed packages (idempotent)
+
+    # packages required by install and post-install scripts
+    # udisks2: fwupd ESP detection, efibootmgr: fwupd UEFI firmware entries
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
+        bluez bluez-utils \
+        power-profiles-daemon \
+        pipewire pipewire-audio pipewire-pulse pipewire-alsa wireplumber \
+        fwupd udisks2 efibootmgr \
+        snapper snap-pac
+
+    # user packages
+    local pkg_file="${SCRIPT_DIR}/packages"
+    if [[ -f "$pkg_file" ]]; then
+        arch-chroot "$MOUNT" pacman -S --needed --noconfirm - < "$pkg_file"
+    fi
+}
+
+generate_fstab() {
+    # https://wiki.archlinux.org/title/Installation_guide#Fstab
+    genfstab -U "$MOUNT" >> "${MOUNT}/etc/fstab"
+
+    # https://wiki.archlinux.org/title/Btrfs#Mounting_subvolumes
+    # without stripping subvolid, a snapper rollback leaves a stale id that fails the mount
+    sed -i -e 's/,subvolid=[0-9]*//g' -e 's/subvolid=[0-9]*,//g' "${MOUNT}/etc/fstab"
+}
+
+deploy_configs() {
+    # deploy static configs from root/
+    cp -rT "${SCRIPT_DIR}/root/" "${MOUNT}/"
+
+    # generate boot entry with LUKS partition UUID
+    # https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system#Configuring_the_boot_loader_2
+    # https://wiki.archlinux.org/title/Zram#Disabling_zswap
+    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Screen_freezes
+    #
+    # kernel parameters:
+    #   rd.luks.name        sd-encrypt syntax (not cryptdevice= which is for the busybox encrypt hook)
+    #   rd.luks.options     tpm2 auto-unlock, falls back to password prompt if not enrolled
+    #   zswap.enabled=0     disable zswap so zram works (zswap intercepts pages before they reach zram)
+    #   amdgpu.dcdebugmask  display freeze workaround (DMUB flip_done timed out)
+    local uuid
+    uuid="$(blkid -s UUID -o value "$ROOT_PART")"
+    mkdir -p "${MOUNT}/boot/loader/entries"
+    cat > "${MOUNT}/boot/loader/entries/arch.conf" <<EOF
+title   Arch Linux
+linux   /vmlinuz-linux
+initrd  /amd-ucode.img
+initrd  /initramfs-linux.img
+options rd.luks.name=${uuid}=cryptroot root=/dev/mapper/cryptroot rootflags=subvol=@ rw rd.luks.options=tpm2-device=auto zswap.enabled=0 amdgpu.dcdebugmask=0x10
+EOF
+}
+
+configure_system() {
+    # https://wiki.archlinux.org/title/Installation_guide#Time
+    # timedatectl/hostnamectl/localectl require dbus, unavailable in chroot
+    arch-chroot "$MOUNT" ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
+    arch-chroot "$MOUNT" hwclock --systohc
+
+    # https://wiki.archlinux.org/title/Locale#Generating_locales
+    # locale.gen deployed by deploy_configs (en_US.UTF-8 already uncommented)
+    arch-chroot "$MOUNT" locale-gen
+
+    # rebuild initramfs with sd-encrypt hooks
+    # https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system#Configuring_mkinitcpio
+    arch-chroot "$MOUNT" mkinitcpio -P
+
+    # https://wiki.archlinux.org/title/Installation_guide#Root_password
+    arch-chroot "$MOUNT" passwd
+
+    # https://wiki.archlinux.org/title/Users_and_groups#User_management
+    arch-chroot "$MOUNT" useradd -m -G wheel -s /bin/bash tk
+    arch-chroot "$MOUNT" passwd tk
+
+    # https://wiki.archlinux.org/title/Sudo#Configuration
+    # sed, not visudo — known-good syntax, single uncomment operation
+    arch-chroot "$MOUNT" sed -i \
+        's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
+
+    # https://wiki.archlinux.org/title/Systemd-boot#Installation
+    arch-chroot "$MOUNT" bootctl install
+}
+
+configure_snapper() {
+    # https://wiki.archlinux.org/title/Snapper#Configuration_of_snapper_and_mount_point
+    # snapper create-config creates a .snapshots child subvolume inside @
+    # replace with our top-level @snapshots (survives rollback, already in fstab)
+    umount "${MOUNT}/.snapshots"
+    rmdir "${MOUNT}/.snapshots"
+    arch-chroot "$MOUNT" snapper --no-dbus -c root create-config /
+    btrfs subvolume delete "${MOUNT}/.snapshots"
+    mkdir "${MOUNT}/.snapshots"
+    mount -o "${BTRFS_OPTS},subvol=@snapshots" "$CRYPT_DEV" "${MOUNT}/.snapshots"
+    chmod 750 "${MOUNT}/.snapshots"
+
+    # https://wiki.archlinux.org/title/Snapper#Set_snapshot_limits
+    # no timeline snapshots — snap-pac handles automation via pacman hooks
+    # keep 10 most recent pre/post pairs, allow tk to list/diff without sudo
+    sed -i \
+        -e 's/^TIMELINE_CREATE=.*/TIMELINE_CREATE="no"/' \
+        -e 's/^NUMBER_LIMIT=.*/NUMBER_LIMIT="10"/' \
+        -e 's/^ALLOW_USERS=.*/ALLOW_USERS="tk"/' \
+        "${MOUNT}/etc/snapper/configs/root"
+
+    # https://wiki.archlinux.org/title/Locate#Btrfs
+    # prevent updatedb from indexing snapshot contents
+    if [[ -f "${MOUNT}/etc/updatedb.conf" ]]; then
+        sed -i '/^PRUNENAMES/s/"$/ .snapshots"/' "${MOUNT}/etc/updatedb.conf"
+    fi
+}
+
+enable_services() {
+    # https://wiki.archlinux.org/title/NetworkManager#Using_iwd_as_the_Wi-Fi_backend
+    # https://wiki.archlinux.org/title/Systemd-timesyncd
+    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Suspend
+    # https://wiki.archlinux.org/title/Bluetooth#Installation
+    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Power_management
+    # do not enable iwd.service — NetworkManager manages iwd internally
+    arch-chroot "$MOUNT" systemctl enable \
+        NetworkManager \
+        systemd-timesyncd.service \
+        rfkill-before-sleep.service \
+        bluetooth.service \
+        power-profiles-daemon \
+        snapper-cleanup.timer
+
+    # https://wiki.archlinux.org/title/PipeWire#Installation
+    # --global enables for all users via /etc/systemd/user/ (no D-Bus needed in chroot)
+    # pipewire-pulse replaces pulseaudio
+    arch-chroot "$MOUNT" systemctl --global enable \
+        pipewire.socket pipewire-pulse.socket wireplumber.service
+}
+
+deploy_dotfiles() {
+    # run bootstrap as tk inside chroot to deploy dotfiles
+    cp "${SCRIPT_DIR}/../bootstrap" "${MOUNT}/home/tk/bootstrap"
+    arch-chroot "$MOUNT" su - tk -c '/home/tk/bootstrap --all --force'
+    rm -f "${MOUNT}/home/tk/bootstrap"
+}
+
+cleanup() {
+    umount -R "$MOUNT"
+    echo
+    echo "Installation complete. Reboot and remove USB:"
+    echo "  reboot"
+}
+
+main() {
+    precheck
+    confirm
+    select_mirrors
+
+    # disk
+    format_nvme
+    partition
+    encrypt
+    create_filesystems
+    mount_filesystems
+
+    # base system
+    install_base
+    generate_fstab
+    deploy_configs
+
+    # chroot setup
+    install_packages
+    configure_system
+    configure_snapper
+    enable_services
+
+    # user environment
+    deploy_dotfiles
+
+    cleanup
+}
+
+main "$@"

@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Post-install — suzuki
+#
+# Run as user tk after first boot. Connect Wi-Fi first:
+#   nmcli device wifi connect "YourNetworkName" --ask
+#
+# Then run:
+#   ~/.bin/suzuki/post-install
+
+ROOT_PART="/dev/nvme0n1p2"
+
+precheck() {
+    if (( EUID == 0 )); then
+        echo "error: run as user tk, not root" >&2
+        exit 1
+    fi
+    if ! ping -c 1 -W 3 archlinux.org &>/dev/null; then
+        echo "error: no internet — connect with: nmcli device wifi connect \"YourNetworkName\" --ask" >&2
+        exit 1
+    fi
+}
+
+update_firmware() {
+    # https://wiki.archlinux.org/title/Fwupd#Usage
+    # UEFI firmware updates may clear the boot entry — re-run bootctl install if needed
+    # BIOS updates are staged for next reboot; do not power off while flashing
+    sudo fwupdmgr refresh
+    if sudo fwupdmgr get-updates &>/dev/null; then
+        sudo fwupdmgr update
+        echo
+        echo "Firmware updated. Reboot and re-run this script."
+        exit 0
+    fi
+}
+
+enroll_tpm() {
+    # https://wiki.archlinux.org/title/Systemd-cryptenroll#Trusted_Platform_Module
+    # binds to PCR 7 (Secure Boot state) — BIOS/firmware updates may invalidate enrollment
+    # re-enroll: systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto /dev/nvme0n1p2
+    if sudo cryptsetup luksDump "$ROOT_PART" | grep -q systemd-tpm2; then
+        echo "TPM already enrolled, skipping"
+        return
+    fi
+    sudo systemd-cryptenroll --tpm2-device=auto "$ROOT_PART"
+}
+
+main() {
+    precheck
+    update_firmware
+    enroll_tpm
+}
+
+main "$@"

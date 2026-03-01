@@ -1,0 +1,14 @@
+[Unit]
+Description=Disable wifi and bluetooth before suspend
+DefaultDependencies=no
+StopWhenUnneeded=yes
+Before=sleep.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/rfkill block all
+ExecStop=/usr/sbin/rfkill unblock all
+
+[Install]
+WantedBy=sleep.target
