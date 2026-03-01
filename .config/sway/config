@@ -4,11 +4,14 @@
 font pango:Fixedsys Excelsior 3.01-L2 10
 
 # wallpaper
-output * bg $HOME/Downloads/1 fill
+# output * bg $HOME/Downloads/1 fill
+
+# suzuki: ICC color profile for BOE NE135A1M-NY1 panel
+output * color_profile icc /usr/share/color/icc/BOE0CB4_01.icm
 
 # monitors
-output DP-4 pos 0 0
-output DP-5 pos 2560 0
+# output DP-4 pos 0 0
+# output DP-5 pos 2560 0
 
 # bar
 bar {
@@ -229,7 +232,7 @@ bindsym $mod+$shift+$olkb05 nop
 bindsym $mod+$olkb14 exec firefox --new-window
 bindsym $mod+$shift+$olkb14 exec firefox --new-window --private-window
 
-bindsym $mod+$olkb15 exec alacritty
+bindsym $mod+$olkb15 exec ghostty
 bindsym $mod+$shift+$olkb15 nop
 
 bindsym $mod+$olkb24 exec thunar
