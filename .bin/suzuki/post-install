@@ -31,7 +31,7 @@ update_firmware() {
     # udisks2: fwupd ESP detection, efibootmgr: fwupd UEFI firmware entries
     sudo pacman -S --needed --noconfirm fwupd udisks2 efibootmgr
     # download latest firmware metadata
-    sudo fwupdmgr refresh
+    sudo fwupdmgr refresh || true
     # check for available updates
     if sudo fwupdmgr get-updates &>/dev/null; then
         # download and apply firmware updates
@@ -65,7 +65,8 @@ main() {
     enroll_tpm
 
     echo
-    msg "Post-installation complete. suzuki is ready to ride"
+    msg "Installation complete."
+    msg "Welcome to suzuki, tk"
 }
 
 main "$@"
