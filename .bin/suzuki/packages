@@ -13,6 +13,7 @@ firefox
 fwupd
 ghostty
 git
+github-cli
 iw
 iwd
 linux
@@ -23,6 +24,7 @@ man-pages
 mesa
 nano
 networkmanager
+openssh
 pacman-contrib
 pipewire
 pipewire-alsa
@@ -37,4 +39,6 @@ vulkan-radeon
 waybar
 wireless-regdb
 wireplumber
+xdg-desktop-portal-gtk
+xdg-desktop-portal-wlr
 zram-generator

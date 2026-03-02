@@ -21,7 +21,12 @@ After first boot, run as user tk:
 
 ```
 nmcli device wifi connect "YourNetworkName" --ask
-~/.bin/suzuki/post-install
+suzuki post-install
 ```
 
-Updates firmware via fwupd and enrolls TPM2 for automatic LUKS unlock.
+Updates firmware via fwupd, enrolls TPM2 for automatic LUKS unlock, and sets up GitHub SSH authentication.
+
+## Next Steps
+
+- Sign into Firefox to sync passwords and extensions
+- Sign into VS Code Settings Sync

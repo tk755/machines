@@ -55,6 +55,27 @@ enroll_tpm() {
     sudo systemd-cryptenroll --tpm2-device=auto "$ROOT_PART"
 }
 
+setup_github_ssh() {
+    # openssh: ssh-keygen, github-cli: gh auth + ssh-key upload
+    sudo pacman -S --needed --noconfirm openssh github-cli
+
+    local key="$HOME/.ssh/id_ed25519"
+
+    if [[ ! -f "$key" ]]; then
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        ssh-keygen -t ed25519 -f "$key" -N "" -C "tk@suzuki" -q
+    fi
+
+    # device code flow — prints URL + code, user authorizes on any browser (phone works)
+    if ! gh auth status &>/dev/null; then
+        gh auth login --web --git-protocol ssh --skip-ssh-key -s admin:public_key
+    fi
+
+    # upload public key (gh deduplicates by key content)
+    gh ssh-key add "${key}.pub" --title "suzuki" --type authentication
+}
+
 main() {
     precheck
 
@@ -63,6 +84,9 @@ main() {
 
     msg "Enrolling TPM"
     enroll_tpm
+
+    msg "Setting up GitHub SSH"
+    setup_github_ssh
 
     echo
     msg "Installation complete."
