@@ -76,6 +76,23 @@ setup_github_ssh() {
     gh ssh-key add "${key}.pub" --title "suzuki" --type authentication
 }
 
+link_dropbox() {
+    # https://wiki.archlinux.org/title/Dropbox#Autostart_on_boot_with_systemd
+    # dropbox.service starts on login, prints a linking URL to the journal
+    if [[ -f "$HOME/.dropbox/info.json" ]]; then
+        echo "Dropbox already linked, skipping"
+        return
+    fi
+    local url
+    url=$(journalctl --user -u dropbox.service -o cat | grep -o 'https://[^ ]*' | tail -1)
+    if [[ -z "$url" ]]; then
+        echo "error: no Dropbox link URL found in journal" >&2
+        return 1
+    fi
+    echo "Link your Dropbox account:"
+    echo "$url"
+}
+
 main() {
     precheck
 
@@ -87,6 +104,9 @@ main() {
 
     msg "Setting up GitHub SSH"
     setup_github_ssh
+
+    msg "Linking Dropbox"
+    link_dropbox
 
     echo
     msg "Installation complete."

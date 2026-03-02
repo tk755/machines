@@ -3,6 +3,7 @@ base
 base-devel
 bluez
 bluez-utils
+brightnessctl
 btop
 btrfs-progs
 cryptsetup

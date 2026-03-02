@@ -277,6 +277,22 @@ configure_power() {
     arch-chroot "$MOUNT" systemctl enable power-profiles-daemon
 }
 
+configure_dropbox() {
+    # https://wiki.archlinux.org/title/Dropbox#Required/optional_packages
+    # python-gpgme: mandatory binary signature verification
+    # libappindicator-gtk3: tray icon in waybar (sync status indicator)
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm --asdeps \
+        python-gpgme libappindicator-gtk3
+
+    # https://wiki.archlinux.org/title/Dropbox#Prevent_automatic_updates
+    # dropbox self-updates to ~/.dropbox-dist, conflicting with the AUR package
+    # read-only directory blocks self-updates, prevents systemd restart loops
+    arch-chroot "$MOUNT" install -dm0 -o tk -g tk /home/tk/.dropbox-dist
+
+    # inotify sysctl deployed by deploy_configs (root/etc/sysctl.d/50-dropbox.conf)
+    arch-chroot "$MOUNT" systemctl --global enable dropbox.service
+}
+
 configure_snapper() {
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm snapper snap-pac
 
@@ -410,6 +426,8 @@ main() {
     build_paru
     msg "Installing AUR packages"
     install_aur_packages
+    msg "Setting up Dropbox"
+    configure_dropbox
     msg "Deploying dotfiles"
     deploy_dotfiles
 
