@@ -29,3 +29,8 @@ if [[ -n "$BASH_VERSION" ]]; then
 fi
 
 export PATH
+
+# fix missing COLORTERM in Windows Terminal
+if [[ -n "$WSL_DISTRO_NAME" ]]; then
+    export COLORTERM=truecolor
+fi
