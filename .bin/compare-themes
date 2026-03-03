@@ -1,0 +1,241 @@
+#!/usr/bin/env python3
+#
+# Usage: compare-themes [theme ...]
+#
+# Renders side-by-side comparisons of terminal color themes.
+# Custom is always included. Without arguments, compares all themes.
+#
+# Examples:
+#   compare-themes                    # all themes
+#   compare-themes Campbell Apple     # Custom vs Campbell vs Apple
+#   compare-themes Ottosson           # Custom vs Ottosson
+
+import sys
+
+def fg(hex_color):
+    h = hex_color.lstrip('#')
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"\033[38;2;{r};{g};{b}m"
+
+def bg(hex_color):
+    h = hex_color.lstrip('#')
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"\033[48;2;{r};{g};{b}m"
+
+RESET = "\033[0m"
+BOLD = "\033[1m"
+BLOCK = "\u2588\u2588"
+NBSP = "\u00a0"
+
+# palette indices
+BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
+BR_BLACK, BR_RED, BR_GREEN, BR_YELLOW, BR_BLUE, BR_MAGENTA, BR_CYAN, BR_WHITE = range(8, 16)
+
+def theme(palette, *, bg_color, fg_color, cursor, sel_bg, sel_fg):
+    return {
+        "palette": palette,
+        "bg": bg_color, "fg": fg_color,
+        "cursor": cursor, "sel_bg": sel_bg, "sel_fg": sel_fg,
+    }
+
+custom_sources = {
+    "palette": ["IRIX", "IRIX", "Camp", "Goog",
+                "IRIX", "IRIX", "IRIX", "IRIX",
+                "Apple", "Apple", "Camp", "Apple",
+                "Apple", "Apple", "Apple", "Apple"],
+    "bg": "IRIX", "fg": "Apple", "cursor": "Apple", "sel_bg": "Apple",
+}
+
+themes = {
+    "Custom": theme(
+        ["#0c0c0c", "#d42426", "#13a10e", "#fbbc05",
+         "#0739e2", "#911f9c", "#4497df", "#cccccc",
+         "#464646", "#ff453a", "#16c60c", "#ffd60a",
+         "#0a84ff", "#bf5af2", "#76d6ff", "#ffffff"],
+        bg_color="#0c0c0c", fg_color="#ffffff", cursor="#98989d",
+        sel_bg="#3f638b", sel_fg="#ffffff",
+    ),
+    "Campbell": theme(
+        ["#0c0c0c", "#c50f1f", "#13a10e", "#c19c00",
+         "#0037da", "#881798", "#3a96dd", "#cccccc",
+         "#767676", "#e74856", "#16c60c", "#f9f1a5",
+         "#3b78ff", "#b4009e", "#61d6d6", "#f2f2f2"],
+        bg_color="#0c0c0c", fg_color="#cccccc", cursor="#cccccc",
+        sel_bg="#264f78", sel_fg="#ffffff",
+    ),
+    "Ottosson": theme(
+        ["#000000", "#be2c21", "#3fae3a", "#be9a4a",
+         "#204dbe", "#bb54be", "#00a7b2", "#bebebe",
+         "#808080", "#ff3e30", "#58ea51", "#ffc944",
+         "#2f6aff", "#fc74ff", "#00e1f0", "#ffffff"],
+        bg_color="#000000", fg_color="#bebebe", cursor="#ffffff",
+        sel_bg="#92a4fd", sel_fg="#000000",
+    ),
+    "IRIX": theme(
+        ["#0c0c0c", "#d42426", "#37a327", "#c29d28",
+         "#0739e2", "#911f9c", "#4497df", "#cccccc",
+         "#767676", "#f34f59", "#45c731", "#f9f2a7",
+         "#4079ff", "#c31ba2", "#6ed7d7", "#f2f2f2"],
+        bg_color="#0c0c0c", fg_color="#f2f2f2", cursor="#c7c7c7",
+        sel_bg="#c2deff", sel_fg="#000000",
+    ),
+    "Apple": theme(
+        ["#1a1a1a", "#cc372e", "#26a439", "#cdac08",
+         "#0869cb", "#9647bf", "#479ec2", "#98989d",
+         "#464646", "#ff453a", "#32d74b", "#ffd60a",
+         "#0a84ff", "#bf5af2", "#76d6ff", "#ffffff"],
+        bg_color="#1e1e1e", fg_color="#ffffff", cursor="#98989d",
+        sel_bg="#3f638b", sel_fg="#ffffff",
+    ),
+    "Google": theme(
+        [None, "#EA4335", "#34A853", "#FBBC05",
+         "#4285F4", None, None, "#cccccc",
+         "#767676", "#EA4335", "#34A853", "#FBBC05",
+         "#4285F4", None, None, "#ffffff"],
+        bg_color=None, fg_color=None, cursor=None,
+        sel_bg=None, sel_fg=None,
+    ),
+}
+
+PALETTE_NAMES = [
+    " 0 black    ", " 1 red      ", " 2 green    ", " 3 yellow   ",
+    " 4 blue     ", " 5 magenta  ", " 6 cyan     ", " 7 white    ",
+    " 8 br.black ", " 9 br.red   ", "10 br.green ", "11 br.yellow",
+    "12 br.blue  ", "13 br.mag   ", "14 br.cyan  ", "15 br.white ",
+]
+
+
+def section(title, width=95):
+    print(f"\n{BOLD}{'=' * width}")
+    print(f"  {title}")
+    print(f"{'=' * width}{RESET}\n")
+
+
+def render_palettes(names):
+    section("COLOR PALETTES")
+    # exclude Google from palette view
+    names = [n for n in names if n != "Google"]
+
+    header = "              "
+    for n in names:
+        header += f"  {BOLD}{n:<16}{RESET}"
+    print(header)
+    print()
+
+    for i in range(16):
+        row = f"  {PALETTE_NAMES[i]}  "
+        for n in names:
+            c = themes[n]["palette"][i]
+            if n == "Custom":
+                row += f"{fg(c)}{BLOCK}{RESET} {c} {custom_sources['palette'][i]:<5s}"
+            else:
+                row += f"{fg(c)}{BLOCK}{RESET} {c}      "
+        print(row)
+        if i == 7:
+            print()
+
+    print()
+
+    for key in ["bg", "fg", "cursor", "sel_bg"]:
+        labels = {"bg": "bg         ", "fg": "fg         ", "cursor": "cursor     ", "sel_bg": "selection  "}
+        row = f"  {labels[key]}   "
+        for n in names:
+            td = themes[n]
+            c = td[key]
+            if key == "bg":
+                row += f"{bg(c)}  {RESET} {c}      "
+            elif key == "sel_bg":
+                src = f" {custom_sources[key]:<5s}" if n == "Custom" else "       "
+                row += f"{bg(td['sel_bg'])}{fg(td['sel_fg'])}sel{RESET} {c}{src}"
+            else:
+                src = f" {custom_sources[key]:<5s}" if n == "Custom" else "      "
+                row += f"{fg(c)}{BLOCK}{RESET} {c}{src}"
+        print(row)
+
+
+def render_prompt(name, t):
+    p = t["palette"]
+    if not p[BR_RED] or not p[BR_BLUE] or not p[BR_MAGENTA]:
+        return
+    conn = p[WHITE] or "#cccccc"
+    print(f"{BOLD}{name}{RESET}")
+    print(
+        f"  {BOLD}{fg(p[BR_RED])}tk"
+        f"{RESET}{fg(conn)} at "
+        f"{BOLD}{fg(p[BR_GREEN])}suzuki"
+        f"{RESET}{fg(conn)} in "
+        f"{BOLD}{fg(p[BR_BLUE])}~/code/project"
+        f"{RESET}{fg(conn)} on "
+        f"{BOLD}{fg(p[BR_YELLOW])}main +3"
+        f"{RESET}{fg(conn)} via "
+        f"{BOLD}{fg(p[BR_MAGENTA])}caspian"
+        f"{RESET}  {fg(conn)}1.2s {fg(p[GREEN])}\u2713{RESET}"
+    )
+    print(f"  {BOLD}{fg(p[BR_WHITE])}$ {RESET}ls -la")
+    w = conn
+    print(f"  {fg(w)}total 42{RESET}")
+    print(f"  {fg(p[BLUE])}drwxr-xr-x{RESET}  {fg(w)}tk tk  4096 Mar  3{RESET}  {BOLD}{fg(p[BLUE])}src/{RESET}")
+    print(f"  {fg(p[BLUE])}drwxr-xr-x{RESET}  {fg(w)}tk tk  4096 Mar  3{RESET}  {BOLD}{fg(p[BLUE])}tests/{RESET}")
+    print(f"  {fg(w)}-rw-r--r--{RESET}  {fg(w)}tk tk  1234 Mar  3{RESET}  {fg(w)}README.md{RESET}")
+    print(f"  {fg(w)}-rw-r--r--{RESET}  {fg(w)}tk tk   567 Mar  3{RESET}  {fg(p[YELLOW])}Makefile{RESET}")
+    print(f"  {BOLD}{fg(p[GREEN])}-rwxr-xr-x{RESET}  {fg(w)}tk tk  8901 Mar  3{RESET}  {BOLD}{fg(p[GREEN])}build.sh{RESET}")
+    print(f"  {BOLD}{fg(p[GREEN])}-rwxr-xr-x{RESET}  {fg(w)}tk tk  2345 Mar  3{RESET}  {BOLD}{fg(p[GREEN])}run{RESET}")
+    print()
+
+
+def render_statusline(name, t):
+    p = t["palette"]
+    gray = p[BR_BLACK] or "#767676"
+    purple = p[BR_MAGENTA]
+    if not purple:
+        purple = "#0c0c0c"
+    gsep = f"{fg(gray)}{NBSP}|{NBSP}{RESET}"
+    line = (
+        f"{RESET}{fg(purple)}Opus 4.6{gsep}"
+        f"{fg(p[BR_BLUE])} main{gsep}"
+        f"{fg(p[BR_GREEN])}42%{gsep}"
+        f"{fg(p[BR_YELLOW])}1.2M{gsep}"
+        f"{fg(p[BR_RED])}$3.50{RESET}"
+    )
+    print(f"{BOLD}{name}{RESET}")
+    print(f"  {line}")
+    print()
+
+
+def render_prompts(names):
+    section("BASH PROMPT RENDERINGS")
+    for n in names:
+        render_prompt(n, themes[n])
+
+
+def render_statuslines(names):
+    section("STATUSLINE RENDERINGS (using bright palette colors)")
+
+    for n in names:
+        p = themes[n]["palette"]
+        if not p[BR_BLUE]:
+            continue
+        render_statusline(n, themes[n])
+
+
+def render(names):
+    render_palettes(names)
+    render_prompts(names)
+    render_statuslines(names)
+
+
+def main():
+    args = sys.argv[1:]
+    if args:
+        for name in args:
+            if name not in themes:
+                print(f"Unknown theme: {name}")
+                print(f"Available: {', '.join(n for n in themes if n != 'Custom')}")
+                sys.exit(1)
+        names = [n for n in args if n != "Custom"] + ["Custom"]
+    else:
+        names = [n for n in themes if n != "Custom"] + ["Custom"]
+    render(names)
+
+
+main()

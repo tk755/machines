@@ -158,18 +158,18 @@ function set_prompt {
 
     # assemble left and right parts of the header and the prompt
     local left right prompt
-    left+="${ANSI_BOLD}${ANSI_RED}\u"               # user
-    left+="${ANSI_BOLD}${ANSI_WHITE} at "
-    left+="${ANSI_LIGHT_GREEN}\h"                   # hostname
-    left+="${ANSI_WHITE} in "
-    left+="${ANSI_LIGHT_BLUE}\w"                    # working directory
+    left+="${ANSI_BOLD}${ANSI_LIGHT_RED}\u"          # user
+    left+="${ANSI_RESET}${ANSI_LIGHT_GRAY} at "
+    left+="${ANSI_BOLD}${ANSI_LIGHT_GREEN}\h"      # hostname
+    left+="${ANSI_RESET}${ANSI_LIGHT_GRAY} in "
+    left+="${ANSI_BOLD}${ANSI_LIGHT_BLUE}\w"       # working directory
     if [[ -n ${git} ]]; then
-        left+="${ANSI_WHITE} on "
-        left+="${ANSI_YELLOW}${git}"                # git branch
+        left+="${ANSI_RESET}${ANSI_LIGHT_GRAY} on "
+        left+="${ANSI_BOLD}${ANSI_LIGHT_YELLOW}${git}"  # git branch
     fi
     if [[ -n ${env} ]]; then
-        left+="${ANSI_WHITE} as "
-        left+="${ANSI_LIGHT_CYAN}${env}"            # chroot/venv
+        left+="${ANSI_RESET}${ANSI_LIGHT_GRAY} via "
+        left+="${ANSI_BOLD}${ANSI_LIGHT_MAGENTA}${env}"  # chroot/venv
     fi
     left+="${ANSI_RESET}"
 

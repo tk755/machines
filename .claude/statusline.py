@@ -8,12 +8,12 @@ from pathlib import Path
 RESET = "\033[0m"
 NBSP = "\u00a0"
 
-C_PURPLE = "\033[38;5;141m"
-C_BLUE = "\033[38;5;69m"
-C_GREEN = "\033[38;5;34m"
-C_YELLOW = "\033[38;5;178m"
-C_RED = "\033[38;5;203m"
-C_GRAY = "\033[38;5;59m"
+C_PURPLE = "\033[38;2;191;90;242m"
+C_BLUE = "\033[38;2;10;132;255m"
+C_GREEN = "\033[38;2;22;198;12m"
+C_YELLOW = "\033[38;2;255;214;10m"
+C_RED = "\033[38;2;255;69;58m"
+C_GRAY = "\033[38;2;70;70;70m"
 
 
 def format_tokens(n: int) -> str:
@@ -58,7 +58,7 @@ def git_branch(data: dict) -> str:
                 cwd=cwd, capture_output=True, text=True, timeout=2,
             )
             if result.returncode == 0:
-                return f" {result.stdout.strip()}"
+                return result.stdout.strip()
         except (OSError, subprocess.TimeoutExpired):
             pass
     return ""
