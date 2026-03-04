@@ -10,15 +10,15 @@ set -euo pipefail
 #
 # OS:         Arch Linux
 # Filesystem: btrfs, subvolumes: @ @home @snapshots @var_log @var_cache
-# Encryption: LUKS2, sd-encrypt (not busybox — supports LUKS2 + TPM2)
+# Encryption: LUKS2, sd-encrypt (not busybox, supports LUKS2 + TPM2)
 # Bootloader: systemd-boot
 # Swap:       zram ram/2 (no swap partition)
 # Desktop:    sway (Wayland)
 # Network:    NetworkManager + iwd backend (MT7921 stability)
-# Power:      power-profiles-daemon (not tlp — AMD/Framework conflict)
+# Power:      power-profiles-daemon (not tlp, AMD/Framework conflict)
 # Snapshots:  snapper + snap-pac (pacman hooks, no timeline)
 #
-# Boot the Arch ISO, then run:
+# Boot the Arch ISO. Then run:
 #   iwctl station wlan0 connect "YourNetworkName"
 #   pacman -Syu git
 #   git clone https://github.com/tk755/dotfiles /tmp/dotfiles
@@ -39,6 +39,17 @@ msg() {
 
 warn() {
     printf '\033[1;33m%s\033[0m\n' "$1"
+}
+
+aur_install() {
+    # https://wiki.archlinux.org/title/Sudo#Configuration
+    # paru calls sudo pacman internally, no TTY in chroot for password prompt
+    # grant scoped NOPASSWD for pacman only, remove after install
+    local sudoers="${MOUNT}/etc/sudoers.d/99-paru"
+    echo 'tk ALL=(ALL) NOPASSWD: /usr/bin/pacman' > "$sudoers"
+    chmod 440 "$sudoers"
+    arch-chroot "$MOUNT" su - tk -c "paru -S --noconfirm --needed $*"
+    rm -f "$sudoers"
 }
 
 precheck() {
@@ -64,20 +75,18 @@ precheck() {
         exit 1
     fi
     if ! ping -c 1 -W 3 ping.archlinux.org &>/dev/null; then
-        echo "error: no internet — connect with iwctl first" >&2
+        echo "error: no internet, connect with iwctl first" >&2
         exit 1
     fi
     if [[ ! -f "${SCRIPT_DIR}/../bootstrap" ]]; then
         echo "error: bootstrap script not found at ${SCRIPT_DIR}/../bootstrap" >&2
         exit 1
     fi
-    if [[ ! -f "${SCRIPT_DIR}/packages" ]]; then
-        echo "warning: user packages file not found at ${SCRIPT_DIR}/packages, only script dependencies will be installed" >&2
-    fi
-
     # clean up from a previous failed run
     umount -R "$MOUNT" 2>/dev/null || true
-    [[ -b "$CRYPT_DEV" ]] && cryptsetup close "$CRYPT_NAME" || true
+    if [[ -b "$CRYPT_DEV" ]]; then
+        cryptsetup close "$CRYPT_NAME" || true
+    fi
 }
 
 get_password() {
@@ -126,11 +135,11 @@ EOF
 encrypt() {
     # https://wiki.archlinux.org/title/Dm-crypt/Device_encryption#Encryption_options_for_LUKS_mode
     # defaults: LUKS2, aes-xts-plain64, argon2id (no GRUB PBKDF2 limitation with systemd-boot)
-    # read passphrase from stdin to avoid interactive prompt
     printf '%s' "$PASSWORD" | cryptsetup luksFormat -q --key-file=- "$ROOT_PART"
+
     # https://wiki.archlinux.org/title/Dm-crypt/Specialties#Discard/TRIM_support_for_solid_state_drives_(SSD)
-    # without allow-discards, TRIM/discard requests are blocked by the crypt layer
-    # --persistent stores allow-discards in the LUKS header permanently
+    # --allow-discards: let TRIM pass through the crypt layer
+    # --persistent: store the flag in the LUKS header permanently
     printf '%s' "$PASSWORD" | cryptsetup open --allow-discards --persistent --key-file=- "$ROOT_PART" "$CRYPT_NAME"
 }
 
@@ -163,7 +172,7 @@ mount_filesystems() {
 
 install_base() {
     # https://wiki.archlinux.org/title/Installation_guide#Install_essential_packages
-    # cryptsetup and btrfs-progs are not in base — without them the system won't boot
+    # cryptsetup and btrfs-progs are not in base, without them the system won't boot
     # -K initializes an empty pacman keyring in the new root
     pacstrap -K "$MOUNT" \
         base base-devel linux linux-firmware amd-ucode \
@@ -182,15 +191,70 @@ generate_fstab() {
     sed -i -e 's/,subvolid=[0-9]*//g' -e 's/subvolid=[0-9]*,//g' "${MOUNT}/etc/fstab"
 }
 
-deploy_configs() {
-    # deploy static configs from root/
-    # -T treats destination as target, not parent directory (merges root/ into /mnt/)
-    cp -rT "${SCRIPT_DIR}/root/" "${MOUNT}/"
+configure_system() {
+    # https://wiki.archlinux.org/title/Installation_guide#Time
+    # timedatectl/hostnamectl/localectl require dbus, unavailable in chroot
+    arch-chroot "$MOUNT" ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
+    # sync hardware clock from system time
+    arch-chroot "$MOUNT" hwclock --systohc
 
-    # generate boot entry with LUKS partition UUID
+    # https://wiki.archlinux.org/title/Installation_guide#Localization
+    cat > "${MOUNT}/etc/locale.gen" <<'EOF'
+en_US.UTF-8 UTF-8
+EOF
+    cat > "${MOUNT}/etc/locale.conf" <<'EOF'
+LANG=en_US.UTF-8
+EOF
+    cat > "${MOUNT}/etc/vconsole.conf" <<'EOF'
+KEYMAP=us
+EOF
+    arch-chroot "$MOUNT" locale-gen
+
+    echo "suzuki" > "${MOUNT}/etc/hostname"
+
+    # https://wiki.archlinux.org/title/Installation_guide#Root_password
+    # https://wiki.archlinux.org/title/Users_and_groups#User_management
+    arch-chroot "$MOUNT" useradd -m -G wheel -s /bin/bash tk
+    # set root and tk passwords in bulk (user:pass format via stdin)
+    printf 'root:%s\ntk:%s\n' "$PASSWORD" "$PASSWORD" | arch-chroot "$MOUNT" chpasswd
+
+    # https://wiki.archlinux.org/title/Sudo#Configuration
+    # sed, not visudo, known-good syntax, single uncomment operation
+    arch-chroot "$MOUNT" sed -i \
+        's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
+
+    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Display
+    # BOE0CB4 panel color profile for Framework 13
+    mkdir -p "${MOUNT}/usr/share/color/icc"
+    cp "${SCRIPT_DIR}/root/usr/share/color/icc/BOE0CB4_01.icm" \
+        "${MOUNT}/usr/share/color/icc/BOE0CB4_01.icm"
+}
+
+configure_boot() {
+    # https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system#Configuring_mkinitcpio
+    # systemd-based hooks for LUKS2 + TPM2 support (sd-encrypt)
+    cat > "${MOUNT}/etc/mkinitcpio.conf" <<'EOF'
+MODULES=()
+BINARIES=()
+FILES=()
+HOOKS=(base systemd autodetect microcode modconf kms keyboard sd-vconsole block sd-encrypt filesystems fsck)
+EOF
+    arch-chroot "$MOUNT" mkinitcpio -P
+
+    # https://wiki.archlinux.org/title/Systemd-boot#Installation
+    # install systemd-boot EFI binaries to the ESP
+    arch-chroot "$MOUNT" bootctl install
+
+    # https://wiki.archlinux.org/title/Systemd-boot#Loader_configuration
+    cat > "${MOUNT}/boot/loader/loader.conf" <<'EOF'
+default arch.conf
+timeout 0
+editor no
+EOF
+
     # https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system#Configuring_the_boot_loader_2
-    # https://wiki.archlinux.org/title/Zram#Disabling_zswap
-    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Screen_freezes
+    # https://wiki.archlinux.org/title/Zswap#Toggling_zswap
+    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Video_freezes
     #
     # kernel parameters:
     #   rd.luks.name        sd-encrypt syntax (not cryptdevice= which is for the busybox encrypt hook)
@@ -209,52 +273,88 @@ options rd.luks.name=${uuid}=cryptroot root=/dev/mapper/cryptroot rootflags=subv
 EOF
 }
 
-configure_system() {
-    # https://wiki.archlinux.org/title/Installation_guide#Time
-    # timedatectl/hostnamectl/localectl require dbus, unavailable in chroot
-    arch-chroot "$MOUNT" ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
-    # sync hardware clock from system time
-    arch-chroot "$MOUNT" hwclock --systohc
+configure_network() {
+    # https://wiki.archlinux.org/title/NetworkManager#Using_iwd_as_the_Wi-Fi_backend
+    mkdir -p "${MOUNT}/etc/NetworkManager/conf.d"
+    cat > "${MOUNT}/etc/NetworkManager/conf.d/wifi-backend.conf" <<'EOF'
+[device]
+wifi.backend=iwd
+EOF
 
-    # https://wiki.archlinux.org/title/Locale#Generating_locales
-    # locale.gen deployed by deploy_configs (en_US.UTF-8 already uncommented)
-    arch-chroot "$MOUNT" locale-gen
+    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Wi-Fi
+    # https://wiki.archlinux.org/title/Network_configuration/Wireless#Respecting_the_regulatory_domain
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm wireless-regdb
+    mkdir -p "${MOUNT}/etc/conf.d"
+    cat > "${MOUNT}/etc/conf.d/wireless-regdom" <<'EOF'
+WIRELESS_REGDOM="US"
+EOF
 
-    # rebuild initramfs with sd-encrypt hooks
-    # https://wiki.archlinux.org/title/Dm-crypt/Encrypting_an_entire_system#Configuring_mkinitcpio
-    arch-chroot "$MOUNT" mkinitcpio -P
+    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Power_management
+    # rfkill wifi/bt before suspend to prevent MT7921 firmware hangs
+    mkdir -p "${MOUNT}/etc/systemd/system"
+    cp "${SCRIPT_DIR}/root/etc/systemd/system/rfkill-before-sleep.service" \
+        "${MOUNT}/etc/systemd/system/rfkill-before-sleep.service"
 
-    # https://wiki.archlinux.org/title/Installation_guide#Root_password
-    # https://wiki.archlinux.org/title/Users_and_groups#User_management
-    arch-chroot "$MOUNT" useradd -m -G wheel -s /bin/bash tk
-    # set root and tk passwords in bulk (user:pass format via stdin)
-    printf 'root:%s\ntk:%s\n' "$PASSWORD" "$PASSWORD" | arch-chroot "$MOUNT" chpasswd
-
-    # https://wiki.archlinux.org/title/Sudo#Configuration
-    # sed, not visudo — known-good syntax, single uncomment operation
-    arch-chroot "$MOUNT" sed -i \
-        's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
-
-    # https://wiki.archlinux.org/title/Systemd-boot#Installation
-    # install systemd-boot EFI binaries to the ESP
-    arch-chroot "$MOUNT" bootctl install
-
-    # enable core services
     arch-chroot "$MOUNT" systemctl enable \
         NetworkManager \
         systemd-timesyncd.service \
         rfkill-before-sleep.service
 }
 
-configure_mirrors() {
+build_paru() {
+    # https://wiki.archlinux.org/title/AUR_helpers
+    # https://wiki.archlinux.org/title/Arch_User_Repository#Installing_and_upgrading_packages
+    # makepkg refuses root, build as tk, install as root
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm rust
+
+    arch-chroot "$MOUNT" su - tk -c 'git clone https://aur.archlinux.org/paru.git /home/tk/paru'
+    arch-chroot "$MOUNT" su - tk -c 'cd /home/tk/paru && makepkg --noconfirm'
+    arch-chroot "$MOUNT" bash -c 'pacman -U --noconfirm /home/tk/paru/*.pkg.tar.zst'
+
+    rm -rf "${MOUNT}/home/tk/paru"
+    arch-chroot "$MOUNT" pacman -Rns --noconfirm rust
+}
+
+install_desktop() {
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
+        pacman-contrib \
+        polkit brightnessctl \
+        easyeffects lsp-plugins-lv2 \
+        mesa vulkan-radeon vulkan-icd-loader \
+        sway waybar xdg-desktop-portal-gtk xdg-desktop-portal-wlr \
+        firefox ghostty thunar \
+        github-cli btop fastfetch
+    aur_install visual-studio-code-bin
+}
+
+setup_mirrors() {
     # https://wiki.archlinux.org/title/Reflector#systemd_service
     # weekly mirror refresh via systemd timer
-    # config deployed by deploy_configs (reflector.conf already in place)
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm reflector
+    mkdir -p "${MOUNT}/etc/xdg/reflector"
+    cat > "${MOUNT}/etc/xdg/reflector/reflector.conf" <<'EOF'
+--country US
+--protocol https
+--age 24
+--latest 50
+--fastest 10
+--save /etc/pacman.d/mirrorlist
+EOF
     arch-chroot "$MOUNT" systemctl enable reflector.timer
 }
 
-configure_audio() {
+setup_zram() {
+    # https://wiki.archlinux.org/title/Zram#Using_zram-generator
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm zram-generator
+    mkdir -p "${MOUNT}/etc/systemd"
+    cat > "${MOUNT}/etc/systemd/zram-generator.conf" <<'EOF'
+[zram0]
+zram-size = ram / 2
+compression-algorithm = zstd
+EOF
+}
+
+setup_audio() {
     # https://wiki.archlinux.org/title/PipeWire#Installation
     # pipewire-pulse replaces pulseaudio, pipewire-alsa provides alsa compatibility
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
@@ -265,35 +365,50 @@ configure_audio() {
         pipewire.socket pipewire-pulse.socket wireplumber.service
 }
 
-configure_bluetooth() {
+setup_bluetooth() {
     # https://wiki.archlinux.org/title/Bluetooth#Installation
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm bluez bluez-utils
     arch-chroot "$MOUNT" systemctl enable bluetooth.service
 }
 
-configure_power() {
+setup_power() {
+    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Power_management
     # https://wiki.archlinux.org/title/Power_profiles_daemon
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm power-profiles-daemon
     arch-chroot "$MOUNT" systemctl enable power-profiles-daemon
 }
 
-configure_dropbox() {
+setup_dropbox() {
     # https://wiki.archlinux.org/title/Dropbox#Required/optional_packages
     # python-gpgme: mandatory binary signature verification
     # libappindicator-gtk3: tray icon in waybar (sync status indicator)
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm --asdeps \
         python-gpgme libappindicator-gtk3
+    aur_install dropbox
 
     # https://wiki.archlinux.org/title/Dropbox#Prevent_automatic_updates
     # dropbox self-updates to ~/.dropbox-dist, conflicting with the AUR package
     # read-only directory blocks self-updates, prevents systemd restart loops
     arch-chroot "$MOUNT" install -dm0 -o tk -g tk /home/tk/.dropbox-dist
 
-    # inotify sysctl deployed by deploy_configs (root/etc/sysctl.d/50-dropbox.conf)
+    # https://wiki.archlinux.org/title/Dropbox#Filesystem_monitoring_problem
+    # default 8192 is too low, dropbox registers an inotify watch per file
+    mkdir -p "${MOUNT}/etc/sysctl.d"
+    cat > "${MOUNT}/etc/sysctl.d/50-dropbox.conf" <<'EOF'
+fs.inotify.max_user_watches = 100000
+EOF
+
     arch-chroot "$MOUNT" systemctl --global enable dropbox.service
 }
 
-configure_snapper() {
+deploy_dotfiles() {
+    # copy bootstrap into chroot, run as tk, then clean up
+    cp "${SCRIPT_DIR}/../bootstrap" "${MOUNT}/home/tk/bootstrap"
+    arch-chroot "$MOUNT" su - tk -c '/home/tk/bootstrap --all --force'
+    rm -f "${MOUNT}/home/tk/bootstrap"
+}
+
+setup_snapshots() {
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm snapper snap-pac
 
     # https://wiki.archlinux.org/title/Snapper#Configuration_of_snapper_and_mount_point
@@ -308,7 +423,7 @@ configure_snapper() {
     chmod 750 "${MOUNT}/.snapshots"
 
     # https://wiki.archlinux.org/title/Snapper#Set_snapshot_limits
-    # no timeline snapshots — snap-pac handles automation via pacman hooks
+    # no timeline snapshots, snap-pac handles automation via pacman hooks
     # keep 10 most recent pre/post pairs, allow tk to list/diff without sudo
     sed -i \
         -e 's/^TIMELINE_CREATE=.*/TIMELINE_CREATE="no"/' \
@@ -322,57 +437,8 @@ configure_snapper() {
         sed -i '/^PRUNENAMES/s/"$/ .snapshots"/' "${MOUNT}/etc/updatedb.conf"
     fi
 
+    # deletes old snapshots daily
     arch-chroot "$MOUNT" systemctl enable snapper-cleanup.timer
-}
-
-install_user_packages() {
-    local pkg_file="${SCRIPT_DIR}/packages"
-    if [[ -f "$pkg_file" ]]; then
-        # read package names from file via stdin
-        arch-chroot "$MOUNT" pacman -S --needed --noconfirm - < "$pkg_file"
-    fi
-}
-
-build_paru() {
-    # https://wiki.archlinux.org/title/AUR_helpers
-    # https://aur.archlinux.org/packages/paru
-    # https://wiki.archlinux.org/title/Arch_User_Repository#Installing_and_upgrading_packages
-    # makepkg refuses root — build as tk, install as root
-    arch-chroot "$MOUNT" pacman -S --needed --noconfirm rust
-    arch-chroot "$MOUNT" su - tk -c 'git clone https://aur.archlinux.org/paru.git /home/tk/paru'
-    arch-chroot "$MOUNT" su - tk -c 'cd /home/tk/paru && makepkg --noconfirm'
-    arch-chroot "$MOUNT" bash -c 'pacman -U --noconfirm /home/tk/paru/*.pkg.tar.zst'
-    rm -rf "${MOUNT}/home/tk/paru"
-    arch-chroot "$MOUNT" pacman -Rns --noconfirm rust
-}
-
-install_aur_packages() {
-    local pkg_file="${SCRIPT_DIR}/packages-aur"
-    [[ -f "$pkg_file" ]] || return 0
-
-    # https://wiki.archlinux.org/title/Sudo#Configuration
-    # paru calls sudo pacman internally — no TTY in chroot for password prompt
-    # grant scoped NOPASSWD for pacman only, removed after install
-    echo 'tk ALL=(ALL) NOPASSWD: /usr/bin/pacman' > "${MOUNT}/etc/sudoers.d/99-paru-install"
-    chmod 440 "${MOUNT}/etc/sudoers.d/99-paru-install"
-    trap 'rm -f "${MOUNT}/etc/sudoers.d/99-paru-install"' EXIT
-
-    # read package names from file, install via paru as tk
-    local -a pkgs
-    mapfile -t pkgs < <(grep -v '^#\|^$' "$pkg_file")
-    if (( ${#pkgs[@]} > 0 )); then
-        arch-chroot "$MOUNT" su - tk -c "paru -S --noconfirm --needed ${pkgs[*]}"
-    fi
-
-    rm -f "${MOUNT}/etc/sudoers.d/99-paru-install"
-    trap - EXIT
-}
-
-deploy_dotfiles() {
-    # copy bootstrap into chroot, run as tk, then clean up
-    cp "${SCRIPT_DIR}/../bootstrap" "${MOUNT}/home/tk/bootstrap"
-    arch-chroot "$MOUNT" su - tk -c '/home/tk/bootstrap --all --force'
-    rm -f "${MOUNT}/home/tk/bootstrap"
 }
 
 cleanup() {
@@ -389,45 +455,53 @@ main() {
     msg "Updating mirrors"
     update_mirrors
 
+    # disk
     msg "Formatting NVMe"
     format_nvme
-    msg "Partitioning drive"
+    msg "Partitioning"
     partition
-    msg "Encrypting root partition"
+    msg "Encrypting root"
     encrypt
     msg "Creating filesystems"
     create_filesystems
     msg "Mounting filesystems"
     mount_filesystems
 
+    # base system
     msg "Installing base system"
     install_base
     msg "Generating fstab"
     generate_fstab
-    msg "Deploying configs"
-    deploy_configs
     msg "Configuring system"
     configure_system
+    msg "Configuring boot"
+    configure_boot
+    msg "Configuring network"
+    configure_network
 
-    msg "Setting up mirrors"
-    configure_mirrors
-    msg "Setting up audio"
-    configure_audio
-    msg "Setting up bluetooth"
-    configure_bluetooth
-    msg "Setting up power management"
-    configure_power
-    msg "Setting up snapper"
-    configure_snapper
-
-    msg "Installing user packages"
-    install_user_packages
+    # packages
     msg "Building paru"
     build_paru
-    msg "Installing AUR packages"
-    install_aur_packages
+    msg "Installing desktop packages"
+    install_desktop
+
+    # features
+    msg "Setting up mirrors"
+    setup_mirrors
+    msg "Setting up zram"
+    setup_zram
+    msg "Setting up audio"
+    setup_audio
+    msg "Setting up Bluetooth"
+    setup_bluetooth
+    msg "Setting up power"
+    setup_power
+    msg "Setting up snapshots"
+    setup_snapshots
     msg "Setting up Dropbox"
-    configure_dropbox
+    setup_dropbox
+
+    # user environment
     msg "Deploying dotfiles"
     deploy_dotfiles
 

@@ -1,32 +1,55 @@
-# suzuki
+# suzuki install
 
-Arch Linux installer for my Framework 13 (AMD Ryzen 5 7640U). Two scripts, six commands, fully encrypted system in under five minutes.
+Fully automated Arch Linux installer for `suzuki` (Framework 13 AMD Ryzen 5 7640U).
 
-## Install
+## Usage
 
-Boot the Arch ISO, then:
+### Install (Automatic)
 
-```
+> Runs unattended after a single password prompt; reboots when finished.
+
+Boot the Arch ISO. Then run:
+
+```bash
 iwctl station wlan0 connect "YourNetworkName"
-pacman -Sy git
+pacman -Syu git
 git clone https://github.com/tk755/dotfiles /tmp/dotfiles
 /tmp/dotfiles/.bin/suzuki/install
 ```
 
-Partitions the drive, encrypts with LUKS2, creates btrfs subvolumes, installs base system and packages, deploys configs and dotfiles, configures snapper. One password prompt covers LUKS, root, and user accounts.
+### Post-Install (Interactive)
 
-## Post-install
+> Handles remaining setup that requires user interaction.
 
-After first boot, run as user tk:
+After first boot, log in as user tk. Then run:
 
-```
+```bash
 nmcli device wifi connect "YourNetworkName" --ask
-suzuki post-install
+~/.bin/suzuki/post-install
 ```
 
-Updates firmware via fwupd, enrolls TPM2 for automatic LUKS unlock, and sets up GitHub SSH authentication.
+### Next Steps (Manual)
 
-## Next Steps
+> Remaining setup that requires a browser and credentials.
 
-- Sign into Firefox to sync passwords and extensions
+- Sign into Firefox + Bitwarden
 - Sign into VS Code Settings Sync
+
+## Modifying the Installer
+
+Each function is self-contained: it installs its own packages, writes its own config files, and enables its own services. To disable a feature, comment out its call in `main()`.
+
+- `configure_*` — base system, always runs
+- `setup_*` — toggleable features
+- `install_base` — boot-critical packages (pacstrap)
+- `install_desktop` — user desktop software
+- `aur_install` — helper for AUR packages, usable from any function
+
+Config files are written inline via heredocs. Systemd units and binary artifacts live in `root/`, each referenced by exactly one owning function.
+
+Comment non-trivial operations with an [Arch Wiki](https://wiki.archlinux.org) link (include the section anchor).
+
+## References
+
+- [Arch Wiki: Installation guide](https://wiki.archlinux.org/title/Installation_guide)
+- [Arch Wiki: Framework Laptop 13](https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series))

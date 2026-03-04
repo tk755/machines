@@ -3,7 +3,7 @@ set -euo pipefail
 
 # suzuki post-install
 #
-# After first boot, run as user tk:
+# After first boot, log in as user tk. Then run:
 #   nmcli device wifi connect "YourNetworkName" --ask
 #   ~/.bin/suzuki/post-install
 
@@ -19,22 +19,21 @@ precheck() {
         exit 1
     fi
     if ! ping -c 1 -W 3 archlinux.org &>/dev/null; then
-        echo "error: no internet — connect with: nmcli device wifi connect \"YourNetworkName\" --ask" >&2
+        echo "error: no internet, connect with: nmcli device wifi connect \"YourNetworkName\" --ask" >&2
         exit 1
     fi
 }
 
 update_firmware() {
     # https://wiki.archlinux.org/title/Fwupd#Usage
-    # UEFI firmware updates may clear the boot entry — re-run bootctl install if needed
-    # BIOS updates are staged for next reboot; do not power off while flashing
-    # udisks2: fwupd ESP detection, efibootmgr: fwupd UEFI firmware entries
+    # udisks2: ESP detection, efibootmgr: UEFI firmware entries
     sudo pacman -S --needed --noconfirm fwupd udisks2 efibootmgr
-    # download latest firmware metadata
+
     sudo fwupdmgr refresh || true
-    # check for available updates
+
+    # apply available updates, then reboot so the next run continues past this step
+    # BIOS updates are staged for next reboot, do not power off while flashing
     if sudo fwupdmgr get-updates &>/dev/null; then
-        # download and apply firmware updates
         sudo fwupdmgr update
         echo
         echo "Firmware updated. Reboot and re-run this script."
@@ -44,14 +43,13 @@ update_firmware() {
 
 enroll_tpm() {
     # https://wiki.archlinux.org/title/Systemd-cryptenroll#Trusted_Platform_Module
-    # binds to PCR 7 (Secure Boot state) — BIOS/firmware updates may invalidate enrollment
+    # binds to PCR 7 (Secure Boot state), BIOS/firmware updates may invalidate
     # re-enroll: systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto /dev/nvme0n1p2
-    # check if TPM slot is already enrolled
     if sudo cryptsetup luksDump "$ROOT_PART" | grep -q systemd-tpm2; then
         echo "TPM already enrolled, skipping"
         return
     fi
-    # enroll TPM2 auto-unlock for the LUKS partition
+
     sudo systemd-cryptenroll --tpm2-device=auto "$ROOT_PART"
 }
 
@@ -67,7 +65,7 @@ setup_github_ssh() {
         ssh-keygen -t ed25519 -f "$key" -N "" -C "tk@suzuki" -q
     fi
 
-    # device code flow — prints URL + code, user authorizes on any browser (phone works)
+    # device code flow, prints URL + code, user authorizes on any browser (phone works)
     if ! gh auth status &>/dev/null; then
         gh auth login --web --git-protocol ssh --skip-ssh-key -s admin:public_key
     fi
@@ -78,19 +76,31 @@ setup_github_ssh() {
 
 link_dropbox() {
     # https://wiki.archlinux.org/title/Dropbox#Autostart_on_boot_with_systemd
-    # dropbox.service starts on login, prints a linking URL to the journal
+    command -v dropbox &>/dev/null || return 0
+
     if [[ -f "$HOME/.dropbox/info.json" ]]; then
         echo "Dropbox already linked, skipping"
         return
     fi
+
+    # dropbox.service prints a linking URL to the journal on first login
     local url
     url=$(journalctl --user -u dropbox.service -o cat | grep -o 'https://[^ ]*' | tail -1)
+
     if [[ -z "$url" ]]; then
         echo "error: no Dropbox link URL found in journal" >&2
         return 1
     fi
+
     echo "Link your Dropbox account:"
     echo "$url"
+}
+
+create_snapshot() {
+    # https://wiki.archlinux.org/title/Snapper#Creating_a_new_snapshot
+    # final snapshot after all install + post-install work
+    sudo snapper -c root create \
+        --description "suzuki install" --userdata "important=yes"
 }
 
 main() {
@@ -107,6 +117,9 @@ main() {
 
     msg "Linking Dropbox"
     link_dropbox
+
+    msg "Creating snapshot 0"
+    create_snapshot
 
     echo
     msg "Installation complete."

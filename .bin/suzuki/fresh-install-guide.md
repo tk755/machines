@@ -765,7 +765,7 @@ lspci -k | grep -A 3 VGA
 ### 27. [Sway](https://wiki.archlinux.org/title/Sway#Installation) — Wayland compositor
 
 ```
-sudo pacman -S sway polkit ghostty waybar pipewire-jack
+sudo pacman -S sway polkit ghostty waybar xdg-desktop-portal-wlr xdg-desktop-portal-gtk
 ```
 
 > | Package | Purpose |
@@ -774,11 +774,10 @@ sudo pacman -S sway polkit ghostty waybar pipewire-jack
 > | polkit | Seat access via systemd-logind |
 > | ghostty | Terminal emulator |
 > | waybar | Customizable Wayland status bar (JSONC config, CSS styling) |
-> | pipewire-jack | JACK compatibility via PipeWire (waybar dependency) |
+> | xdg-desktop-portal-wlr | Screen sharing + screenshot portal (wlroots backend) |
+> | xdg-desktop-portal-gtk | File picker dialogs, notifications, dark mode preference |
 >
 > Sway config and auto-start live in [dotfiles](https://github.com/tk755/dotfiles). The sway config must include `include /etc/sway/config.d/*` to load the systemd integration drop-in (required for PipeWire and portals).
->
-> **Later**: Install `xdg-desktop-portal-wlr` (screen sharing) and `xdg-desktop-portal-gtk` (file picker dialogs) when needed.
 
 ### 28. [PipeWire](https://wiki.archlinux.org/title/PipeWire#Installation) — audio
 
