@@ -1,13 +1,18 @@
 # sway config file (adapted from i3 config file)
                                  
 # font
-font pango:Fixedsys Excelsior 3.01-L2 10
+font pango:JetBrains Mono Slashed NF 10
 
 # wallpaper
-# output * bg $HOME/Downloads/1 fill
+# output * bg $HOME/Dropbox/media/pictures/wallpapers/active/suzuki
 
 # suzuki: ICC color profile for BOE NE135A1M-NY1 panel
 output * color_profile icc /usr/share/color/icc/BOE0CB4_01.icm
+
+# touchpad
+input type:touchpad {
+    natural_scroll enabled
+}
 
 # monitors
 # output DP-4 pos 0 0

@@ -1,6 +1,7 @@
 * {
-  font-family: "Material", "Fixedsys Excelsior 3.01-L2", monospace;
-  font-size: 18px;
+  font-family: "JetBrains Mono Slashed NF", monospace;
+  font-weight: bold;
+  font-size: 14px;
 }
 
 window#waybar {
