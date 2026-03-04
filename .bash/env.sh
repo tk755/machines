@@ -1,6 +1,5 @@
 # prepend to PATH; later entries take precedence
 add_to_path() {
-    [[ -d "$1" ]] || return     # skip if directory does not exist
     case ":$PATH:" in
         *":$1:"*)          ;; # skip if already in PATH
         *) PATH="$1:$PATH" ;; # prepend to PATH
