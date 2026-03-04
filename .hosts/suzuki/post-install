@@ -67,7 +67,8 @@ setup_github_ssh() {
 
     # device code flow, prints URL + code, user authorizes on any browser (phone works)
     if ! gh auth status &>/dev/null; then
-        gh auth login --web --git-protocol ssh --skip-ssh-key -s admin:public_key
+        # GH_BROWSER=: prevents xdg-open from blocking until the browser exits
+        GH_BROWSER=: gh auth login --web --git-protocol ssh --skip-ssh-key -h github.com -s admin:public_key
     fi
 
     # upload public key (gh deduplicates by key content)
@@ -92,18 +93,33 @@ link_dropbox() {
         return 1
     fi
 
-    echo "Link your Dropbox account:"
+    echo "Link your Dropbox account."
+    echo "If the browser does not open automatically, open this URL to link:"
     echo "$url"
+    xdg-open "$url" &>/dev/null &
+    read -rp "Press Enter after linking Dropbox..."
 }
 
 create_first_snapshot() {
     # https://wiki.archlinux.org/title/Snapper#Creating_a_new_snapshot
-    # delete snapshots accumulated by snap-pac during install
-    sudo snapper -c root delete 1-1000 2>/dev/null || true
+    local desc="suzuki post-install"
 
-    # initial snapshot for the fully installed system
-    sudo snapper -c root create \
-        --description "suzuki post-install" --userdata "important=yes"
+    # skip if already created (safe for re-runs)
+    if sudo snapper -c root list --columns description | grep -q "$desc"; then
+        echo "Post-install snapshot already exists, skipping"
+        return
+    fi
+
+    # delete snapshots accumulated by snap-pac during install
+    local snapshots
+    snapshots=$(sudo snapper -c root list --columns number | awk 'NR>2 && $1 != 0 {print $1}')
+    if [[ -n "$snapshots" ]]; then
+        # shellcheck disable=SC2086 # intentional word splitting
+        sudo snapper -c root delete $snapshots
+    fi
+
+    # persistent initial snapshot for the fully installed system
+    sudo snapper -c root create --description "$desc" --userdata "important=yes"
 }
 
 main() {
