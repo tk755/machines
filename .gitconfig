@@ -15,6 +15,10 @@
 [alias]
 	# status
 	s = status -sb
+	# add
+	a = add
+	# commit with message
+	cm = commit -m
 	# unstaged changes
 	d = diff -w --word-diff=color --ignore-space-at-eol
 	# staged changes
