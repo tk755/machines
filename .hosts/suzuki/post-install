@@ -73,19 +73,6 @@ setup_fingerprint() {
     sudo fprintd-enroll tk
 }
 
-load_easyeffects_preset() {
-    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Speakers
-    command -v easyeffects &>/dev/null || return 0
-    if grep -q 'fw13-easy-effects' ~/.config/easyeffects/db/easyeffectsrc 2>/dev/null; then
-        echo "EasyEffects preset already loaded, skipping"
-        return
-    fi
-
-    echo "Load the fw13-easy-effects preset in EasyEffects."
-    easyeffects &
-    read -rp "Press Enter after loading the preset..."
-}
-
 setup_github_ssh() {
     # openssh: ssh-keygen, github-cli: gh auth + ssh-key upload
     sudo pacman -S --needed --noconfirm openssh github-cli
@@ -166,9 +153,6 @@ main() {
 
     msg "Setting up fingerprint"
     setup_fingerprint
-
-    msg "Loading EasyEffects preset"
-    load_easyeffects_preset
 
     msg "Setting up GitHub SSH"
     setup_github_ssh
