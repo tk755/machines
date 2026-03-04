@@ -87,10 +87,34 @@ themes = {
         bg_color="#1e1e1e", fg_color="#ffffff", cursor="#98989d",
         sel_bg="#3f638b", sel_fg="#ffffff",
     ),
+    "GH Dark Default": theme(
+        ["#484f58", "#ff7b72", "#3fb950", "#d29922",
+         "#58a6ff", "#bc8cff", "#39c5cf", "#b1bac4",
+         "#6e7681", "#ffa198", "#56d364", "#e3b341",
+         "#79c0ff", "#d2a8ff", "#56d4dd", "#ffffff"],
+        bg_color="#0d1117", fg_color="#e6edf3", cursor="#2f81f7",
+        sel_bg="#e6edf3", sel_fg="#0d1117",
+    ),
+    "Dracula": theme(
+        ["#21222c", "#ff5555", "#50fa7b", "#f1fa8c",
+         "#bd93f9", "#ff79c6", "#8be9fd", "#f8f8f2",
+         "#6272a4", "#ff6e6e", "#69ff94", "#ffffa5",
+         "#d6acff", "#ff92df", "#a4ffff", "#ffffff"],
+        bg_color="#282a36", fg_color="#f8f8f2", cursor="#f8f8f2",
+        sel_bg="#44475a", sel_fg="#ffffff",
+    ),
+    "Primary": theme(
+        [None, "#db4437", "#0f9d58", "#f4b400",
+         "#4285f4", None, None, "#bfbfbf",
+         None, "#db4437", "#0f9d58", "#f4b400",
+         "#4285f4", None, None, "#ffffff"],
+        bg_color=None, fg_color=None, cursor=None,
+        sel_bg=None, sel_fg=None,
+    ),
     "Google": theme(
         [None, "#EA4335", "#34A853", "#FBBC05",
          "#4285F4", None, None, "#cccccc",
-         "#767676", "#EA4335", "#34A853", "#FBBC05",
+         None, "#EA4335", "#34A853", "#FBBC05",
          "#4285F4", None, None, "#ffffff"],
         bg_color=None, fg_color=None, cursor=None,
         sel_bg=None, sel_fg=None,
@@ -113,8 +137,8 @@ def section(title, width=95):
 
 def render_palettes(names):
     section("COLOR PALETTES")
-    # exclude Google from palette view
-    names = [n for n in names if n != "Google"]
+    # exclude themes with incomplete palettes
+    names = [n for n in names if all(themes[n]["palette"])]
 
     header = "              "
     for n in names:
