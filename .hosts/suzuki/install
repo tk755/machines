@@ -319,7 +319,7 @@ install_desktop() {
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
         pacman-contrib \
         polkit brightnessctl \
-        mesa vulkan-radeon vulkan-icd-loader \
+        mesa vulkan-radeon \
         sway waybar xdg-desktop-portal-gtk xdg-desktop-portal-wlr \
         firefox ghostty thunar spotify-launcher \
         github-cli btop fastfetch
@@ -362,6 +362,20 @@ setup_audio() {
     # --global enables for all users via /etc/systemd/user/ (no D-Bus needed in chroot)
     arch-chroot "$MOUNT" systemctl --global enable \
         pipewire.socket pipewire-pulse.socket wireplumber.service
+}
+
+setup_easyeffects() {
+    # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Speakers
+    # DSP preset for the laptop's downward-firing speakers (high-pass, compressor, limiter)
+    # preset deployed by dotfiles, service runs headless via systemd
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm easyeffects
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm --asdeps lsp-plugins-lv2 qt6-wayland
+
+    mkdir -p "${MOUNT}/etc/systemd/user"
+    cp "${SCRIPT_DIR}/systemd/easyeffects.service" \
+        "${MOUNT}/etc/systemd/user/easyeffects.service"
+
+    arch-chroot "$MOUNT" systemctl --global enable easyeffects.service
 }
 
 setup_bluetooth() {
@@ -491,6 +505,8 @@ main() {
     setup_zram
     msg "Setting up audio"
     setup_audio
+    msg "Setting up EasyEffects"
+    setup_easyeffects
     msg "Setting up Bluetooth"
     setup_bluetooth
     msg "Setting up power"

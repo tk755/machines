@@ -930,7 +930,7 @@ easyeffects -l fw13-easy-effects
 
 > EasyEffects is a PipeWire filter that applies DSP to audio output. The Framework preset includes a high-pass filter, compressor, and limiter tuned for the laptop's downward-firing speakers. `lsp-plugins-lv2` provides the DSP plugins (compressor, delay) the preset depends on.
 >
-> **TODO**: Set up autostart via a custom systemd user service (`easyeffects --gapplication-service`). EasyEffects does not ship a service file. See [GitHub #3635](https://github.com/wwmm/easyeffects/issues/3635).
+> Autostart is handled by a custom systemd user service (`easyeffects --gapplication-service`) enabled during install.
 
 ---
 

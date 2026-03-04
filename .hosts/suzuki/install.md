@@ -25,7 +25,7 @@ After first boot, log in as user tk. Then run:
 
 ```bash
 nmcli device wifi connect "YourNetworkName" --ask
-~/.hosts/suzuki/post-install
+suzuki post-install
 ```
 
 ### Next Steps (Manual)
