@@ -7,7 +7,7 @@ _host_cmd_list() {
     local host_dir="$HOME/.hosts/$HOSTNAME"
     local script
     for script in "$host_dir"/*; do
-        [[ -x "$script" ]] && printf '%s\n' "${script##*/}"
+        [[ -f "$script" && -x "$script" ]] && printf '%s\n' "${script##*/}"
     done
 }
 
