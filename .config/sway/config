@@ -3,8 +3,6 @@
 # font
 font pango:JetBrains Mono Slashed NF 10
 
-# wallpaper
-# output * bg $HOME/Dropbox/media/pictures/wallpapers/active/suzuki
 
 # suzuki: ICC color profile for BOE NE135A1M-NY1 panel
 output * color_profile icc /usr/share/color/icc/BOE0CB4_01.icm
