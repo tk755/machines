@@ -1,6 +1,5 @@
 ---
 description: Sync local changes to a repository
-disable-model-invocation: true
 allowed-tools: Bash, Read, Grep, Glob
 ---
 
