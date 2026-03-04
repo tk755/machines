@@ -53,6 +53,26 @@ enroll_tpm() {
     sudo systemd-cryptenroll --tpm2-device=auto "$ROOT_PART"
 }
 
+setup_fingerprint() {
+    # https://wiki.archlinux.org/title/Fprint
+    # login only, not sudo/polkit (CVE-2024-37408: fingerprint prompt hijack)
+    sudo pacman -S --needed --noconfirm fprintd
+
+    # skip if already enrolled
+    if fprintd-list tk 2>/dev/null | grep -q finger; then
+        echo "Fingerprint already enrolled, skipping"
+        return
+    fi
+
+    # add fingerprint auth to console login
+    local pam="/etc/pam.d/system-local-login"
+    if ! grep -q pam_fprintd "$pam"; then
+        sudo sed -i '1a auth      sufficient pam_fprintd.so' "$pam"
+    fi
+
+    sudo fprintd-enroll tk
+}
+
 setup_github_ssh() {
     # openssh: ssh-keygen, github-cli: gh auth + ssh-key upload
     sudo pacman -S --needed --noconfirm openssh github-cli
@@ -130,6 +150,9 @@ main() {
 
     msg "Enrolling TPM"
     enroll_tpm
+
+    msg "Setting up fingerprint"
+    setup_fingerprint
 
     msg "Setting up GitHub SSH"
     setup_github_ssh

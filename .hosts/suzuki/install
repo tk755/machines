@@ -319,10 +319,9 @@ install_desktop() {
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
         pacman-contrib \
         polkit brightnessctl \
-        easyeffects lsp-plugins-lv2 \
         mesa vulkan-radeon vulkan-icd-loader \
         sway waybar xdg-desktop-portal-gtk xdg-desktop-portal-wlr \
-        firefox ghostty thunar \
+        firefox ghostty thunar spotify-launcher \
         github-cli btop fastfetch
     aur_install visual-studio-code-bin
 }
