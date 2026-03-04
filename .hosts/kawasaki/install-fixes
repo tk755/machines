@@ -19,7 +19,7 @@ fi
 USER_HOME=$(eval echo ~${SUDO_USER:-$USER})
 
 # copy the fix scripts
-cp -v "$USER_HOME/.bin/kawasaki/fixes/network_hack_hibernation" /usr/lib/systemd/system-sleep/
-cp -v "$USER_HOME/.bin/kawasaki/fixes/lid_wakeup_disable"       /usr/lib/systemd/system-sleep/
+cp -v "$USER_HOME/.hosts/kawasaki/fixes/network_hack_hibernation" /usr/lib/systemd/system-sleep/
+cp -v "$USER_HOME/.hosts/kawasaki/fixes/lid_wakeup_disable"       /usr/lib/systemd/system-sleep/
 
 echo -e "\e[1m\e[32mFixes successfully installed\e[0m"

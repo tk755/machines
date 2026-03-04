@@ -14,7 +14,7 @@ Boot the Arch ISO. Then run:
 iwctl station wlan0 connect "YourNetworkName"
 pacman -Syu git
 git clone https://github.com/tk755/dotfiles /tmp/dotfiles
-/tmp/dotfiles/.bin/suzuki/install
+/tmp/dotfiles/.hosts/suzuki/install
 ```
 
 ### Post-Install (Interactive)
@@ -25,7 +25,7 @@ After first boot, log in as user tk. Then run:
 
 ```bash
 nmcli device wifi connect "YourNetworkName" --ask
-~/.bin/suzuki/post-install
+~/.hosts/suzuki/post-install
 ```
 
 ### Next Steps (Manual)
@@ -45,7 +45,7 @@ Each function is self-contained: it installs its own packages, writes its own co
 - `install_desktop` — user desktop software
 - `aur_install` — helper for AUR packages, usable from any function
 
-Config files are written inline via heredocs. Systemd units and binary artifacts live in `root/`, each referenced by exactly one owning function.
+Config files are written inline via heredocs. Systemd units and binary artifacts live in `systemd/` or at the project root, each referenced by exactly one owning function.
 
 Comment non-trivial operations with an [Arch Wiki](https://wiki.archlinux.org) link (include the section anchor).
 

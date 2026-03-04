@@ -1,10 +1,10 @@
 # registers the hostname for running host-specific scripts
 # usage: <hostname> [command] [args...]
 #   no args  — list available commands
-#   command  — run ~/.bin/<hostname>/command
+#   command  — run ~/.hosts/<hostname>/command
 
 _host_cmd_list() {
-    local host_dir="$HOME/.bin/$HOSTNAME"
+    local host_dir="$HOME/.hosts/$HOSTNAME"
     local script
     for script in "$host_dir"/*; do
         [[ -x "$script" ]] && printf '%s\n' "${script##*/}"
@@ -24,7 +24,7 @@ _host_cmd() {
     fi
 
     # run command
-    local host_dir="$HOME/.bin/$HOSTNAME"
+    local host_dir="$HOME/.hosts/$HOSTNAME"
     local cmd="$1"; shift
     if [[ ! -x "$host_dir/$cmd" ]]; then
         printf '%s: %s: command not found\n' "$HOSTNAME" "$cmd" >&2

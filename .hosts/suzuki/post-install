@@ -5,7 +5,7 @@ set -euo pipefail
 #
 # After first boot, log in as user tk. Then run:
 #   nmcli device wifi connect "YourNetworkName" --ask
-#   ~/.bin/suzuki/post-install
+#   ~/.hosts/suzuki/post-install
 
 ROOT_PART="/dev/nvme0n1p2"
 

@@ -61,7 +61,7 @@ curl -fsSL https://raw.githubusercontent.com/tk755/dotfiles/main/.bin/bootstrap 
 ## 5. Install Packages
 
 ```
-sudo ~/.bin/yamaha/packages/apt-install.sh
+sudo ~/.hosts/yamaha/packages/apt-install.sh
 ```
 
 ## 6. Set Up Home Directory

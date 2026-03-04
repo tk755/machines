@@ -36,13 +36,13 @@ dotfiles push
 
 User-level scripts are organized by scope:
 - `~/.bin/` — user-invoked scripts, on `$PATH`
-- `~/.bin/<hostname>/` — host-specific scripts, invoked via the hostname as a command
 - `~/.bin/common/` — shared helpers called by other scripts
+- `~/.hosts/<hostname>/` — host-specific scripts, invoked via the hostname as a command
 - `~/.config/**` — application-specific scripts alongside their configs
 
 Use the hostname as a command to invoke host-specific scripts:
 
 ```bash
-suzuki install        # run ~/.bin/suzuki/install
 suzuki                # list available commands
+suzuki install        # run ~/.hosts/suzuki/install
 ```

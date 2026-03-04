@@ -22,7 +22,7 @@ set -euo pipefail
 #   iwctl station wlan0 connect "YourNetworkName"
 #   pacman -Syu git
 #   git clone https://github.com/tk755/dotfiles /tmp/dotfiles
-#   /tmp/dotfiles/.bin/suzuki/install
+#   /tmp/dotfiles/.hosts/suzuki/install
 
 DRIVE="/dev/nvme0n1"
 EFI_PART="${DRIVE}p1"
@@ -78,8 +78,8 @@ precheck() {
         echo "error: no internet, connect with iwctl first" >&2
         exit 1
     fi
-    if [[ ! -f "${SCRIPT_DIR}/../bootstrap" ]]; then
-        echo "error: bootstrap script not found at ${SCRIPT_DIR}/../bootstrap" >&2
+    if [[ ! -f "${SCRIPT_DIR}/../../.bin/bootstrap" ]]; then
+        echo "error: bootstrap script not found at ${SCRIPT_DIR}/../../.bin/bootstrap" >&2
         exit 1
     fi
     # clean up from a previous failed run
@@ -226,7 +226,7 @@ EOF
     # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Display
     # BOE0CB4 panel color profile for Framework 13
     mkdir -p "${MOUNT}/usr/share/color/icc"
-    cp "${SCRIPT_DIR}/root/usr/share/color/icc/BOE0CB4_01.icm" \
+    cp "${SCRIPT_DIR}/BOE0CB4_01.icm" \
         "${MOUNT}/usr/share/color/icc/BOE0CB4_01.icm"
 }
 
@@ -292,7 +292,7 @@ EOF
     # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Power_management
     # rfkill wifi/bt before suspend to prevent MT7921 firmware hangs
     mkdir -p "${MOUNT}/etc/systemd/system"
-    cp "${SCRIPT_DIR}/root/etc/systemd/system/rfkill-before-sleep.service" \
+    cp "${SCRIPT_DIR}/systemd/rfkill-before-sleep.service" \
         "${MOUNT}/etc/systemd/system/rfkill-before-sleep.service"
 
     arch-chroot "$MOUNT" systemctl enable \
@@ -403,7 +403,7 @@ EOF
 
 deploy_dotfiles() {
     # copy bootstrap into chroot, run as tk, then clean up
-    cp "${SCRIPT_DIR}/../bootstrap" "${MOUNT}/home/tk/bootstrap"
+    cp "${SCRIPT_DIR}/../../.bin/bootstrap" "${MOUNT}/home/tk/bootstrap"
     arch-chroot "$MOUNT" su - tk -c '/home/tk/bootstrap --all --force'
     rm -f "${MOUNT}/home/tk/bootstrap"
 }
