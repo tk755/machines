@@ -8,7 +8,7 @@
 # 0 black   I    8  br.black   A    bg      I
 # 1 red     I    9  br.red     A    fg      A
 # 2 green   C    10 br.green   C    cursor  A
-# 3 yellow  G    11 br.yell    A    select  A
+# 3 yellow  G    11 br.yell         select  A
 # 4 blue    I    12 br.blue    A
 # 5 magenta I    13 br.magenta A
 # 6 cyan    I    14 br.cyan    A
@@ -25,7 +25,7 @@ palette =  7 = #cccccc
 palette =  8 = #464646
 palette =  9 = #ff453a
 palette = 10 = #16c60c
-palette = 11 = #ffd60a
+palette = 11 = #ffd038
 palette = 12 = #0a84ff
 palette = 13 = #bf5af2
 palette = 14 = #76d6ff

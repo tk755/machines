@@ -41,7 +41,7 @@ def theme(palette, *, bg_color, fg_color, cursor, sel_bg, sel_fg):
 custom_sources = {
     "palette": ["IRIX", "IRIX", "Camp", "Goog",
                 "IRIX", "IRIX", "IRIX", "IRIX",
-                "Apple", "Apple", "Camp", "Apple",
+                "Apple", "Apple", "Camp", "",
                 "Apple", "Apple", "Apple", "Apple"],
     "bg": "IRIX", "fg": "Apple", "cursor": "Apple", "sel_bg": "Apple",
 }
@@ -50,7 +50,7 @@ themes = {
     "Custom": theme(
         ["#0c0c0c", "#d42426", "#13a10e", "#fbbc05",
          "#0739e2", "#911f9c", "#4497df", "#cccccc",
-         "#464646", "#ff453a", "#16c60c", "#ffd60a",
+         "#464646", "#ff453a", "#16c60c", "#ffd038",
          "#0a84ff", "#bf5af2", "#76d6ff", "#ffffff"],
         bg_color="#0c0c0c", fg_color="#ffffff", cursor="#98989d",
         sel_bg="#3f638b", sel_fg="#ffffff",
