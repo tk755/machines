@@ -82,9 +82,9 @@ set $ws0 "0"
 
 # colors 
 set $fg #D8DEE9
-set $bg #2E3440
-set $fbg #B48EAD
-set $ind #A3BE8C
+set $bg #0c0c0c
+set $fbg #464646
+set $ind #cccccc
 
 
 # ██     ██  ██████  ██████  ██   ██ ███████ ██████   █████   ██████ ███████ ███████ 
@@ -297,15 +297,10 @@ bindsym {
     XF86AudioRewind     exec playerctl position -10
 }
 
-# volume: TODO use sway-native wpctl (pipewire)
-# NOTE:
-#   By default, pulseaudio has a delay on the volume settings
-#   To disable it, edit the file /etc/pulse/daemon.conf by
-#     adding/replacing the setting `enable-deferred-volume = no` (w/o a semicolon)
-#   For more info see `man pulse-daemon.conf`
-bindsym XF86AudioMute exec amixer sset 'Master' toggle
-bindsym XF86AudioLowerVolume exec amixer sset 'Master' 5%-
-bindsym XF86AudioRaiseVolume exec amixer sset 'Master' 5%+
+# volume (requires: wpctl via wireplumber)
+bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+bindsym XF86AudioRaiseVolume exec wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+
 
 
 #  ██████   █████  ██████  ███████ 
