@@ -87,8 +87,9 @@ setup_github_ssh() {
 
     # device code flow, prints URL + code, user authorizes on any browser (phone works)
     if ! gh auth status &>/dev/null; then
-        # GH_BROWSER=: prevents xdg-open from blocking until the browser exits
-        GH_BROWSER=: gh auth login --web --git-protocol ssh --skip-ssh-key -h github.com -s admin:public_key
+        # xdg-open blocks until the browser exits, which prevents gh from polling
+        echo "Close the browser after authenticating to continue."
+        gh auth login --web --git-protocol ssh --skip-ssh-key -h github.com -s admin:public_key
     fi
 
     # upload public key (gh deduplicates by key content)
