@@ -1,3 +1,5 @@
+# https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Wakeup_issues
+
 [Unit]
 Description=Disable wifi and bluetooth before suspend
 DefaultDependencies=no

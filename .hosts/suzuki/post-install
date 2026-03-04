@@ -96,11 +96,14 @@ link_dropbox() {
     echo "$url"
 }
 
-create_snapshot() {
+create_first_snapshot() {
     # https://wiki.archlinux.org/title/Snapper#Creating_a_new_snapshot
-    # final snapshot after all install + post-install work
+    # delete snapshots accumulated by snap-pac during install
+    sudo snapper -c root delete 1-1000 2>/dev/null || true
+
+    # initial snapshot for the fully installed system
     sudo snapper -c root create \
-        --description "suzuki install" --userdata "important=yes"
+        --description "suzuki post-install" --userdata "important=yes"
 }
 
 main() {
@@ -118,8 +121,8 @@ main() {
     msg "Linking Dropbox"
     link_dropbox
 
-    msg "Creating snapshot 0"
-    create_snapshot
+    msg "Creating first snapshot"
+    create_first_snapshot
 
     echo
     msg "Installation complete."

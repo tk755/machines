@@ -12,9 +12,9 @@ Boot the Arch ISO. Then run:
 
 ```bash
 iwctl station wlan0 connect "YourNetworkName"
-pacman -Syu git
-git clone https://github.com/tk755/dotfiles /tmp/dotfiles
-/tmp/dotfiles/.hosts/suzuki/install
+pacman -Sy git
+git clone https://github.com/tk755/dotfiles
+dotfiles/.hosts/suzuki/install
 ```
 
 ### Post-Install (Interactive)
@@ -39,11 +39,11 @@ nmcli device wifi connect "YourNetworkName" --ask
 
 Each function is self-contained: it installs its own packages, writes its own config files, and enables its own services. To disable a feature, comment out its call in `main()`.
 
-- `configure_*` — base system, always runs
-- `setup_*` — toggleable features
-- `install_base` — boot-critical packages (pacstrap)
-- `install_desktop` — user desktop software
-- `aur_install` — helper for AUR packages, usable from any function
+- `configure_*` - base system, always runs
+- `setup_*` - toggleable features
+- `install_base` - boot-critical packages (pacstrap)
+- `install_desktop` - user desktop software
+- `aur_install` - helper for AUR packages, usable from any function
 
 Config files are written inline via heredocs. Systemd units and binary artifacts live in `systemd/` or at the project root, each referenced by exactly one owning function.
 

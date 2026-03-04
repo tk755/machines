@@ -20,9 +20,9 @@ set -euo pipefail
 #
 # Boot the Arch ISO. Then run:
 #   iwctl station wlan0 connect "YourNetworkName"
-#   pacman -Syu git
-#   git clone https://github.com/tk755/dotfiles /tmp/dotfiles
-#   /tmp/dotfiles/.hosts/suzuki/install
+#   pacman -Sy git
+#   git clone https://github.com/tk755/dotfiles
+#   dotfiles/.hosts/suzuki/install
 
 DRIVE="/dev/nvme0n1"
 EFI_PART="${DRIVE}p1"
