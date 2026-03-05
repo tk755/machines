@@ -295,6 +295,11 @@ EOF
     cp "${SCRIPT_DIR}/systemd/rfkill-before-sleep.service" \
         "${MOUNT}/etc/systemd/system/rfkill-before-sleep.service"
 
+    # https://wiki.archlinux.org/title/NetworkManager#Network_services_with_NetworkManager_dispatcher
+    # disable wifi power save to prevent MT7921 inactivity disconnects
+    install -Dm755 "${SCRIPT_DIR}/networkmanager/90-wifi-powersave.sh" \
+        "${MOUNT}/etc/NetworkManager/dispatcher.d/90-wifi-powersave.sh"
+
     arch-chroot "$MOUNT" systemctl enable \
         NetworkManager \
         systemd-timesyncd.service \
