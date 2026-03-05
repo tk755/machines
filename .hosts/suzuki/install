@@ -305,25 +305,28 @@ build_paru() {
     # https://wiki.archlinux.org/title/AUR_helpers
     # https://wiki.archlinux.org/title/Arch_User_Repository#Installing_and_upgrading_packages
     # makepkg refuses root, build as tk, install as root
-    arch-chroot "$MOUNT" pacman -S --needed --noconfirm rust
+    # cargo is the only makedepend; install rust temporarily if not already available (e.g. via rustup)
+    arch-chroot "$MOUNT" bash -c 'command -v cargo &>/dev/null || pacman -S --needed --noconfirm rust'
 
     arch-chroot "$MOUNT" su - tk -c 'git clone https://aur.archlinux.org/paru.git /home/tk/paru'
     arch-chroot "$MOUNT" su - tk -c 'cd /home/tk/paru && makepkg --noconfirm'
     arch-chroot "$MOUNT" bash -c 'pacman -U --noconfirm /home/tk/paru/*.pkg.tar.zst'
 
     rm -rf "${MOUNT}/home/tk/paru"
-    arch-chroot "$MOUNT" pacman -Rns --noconfirm rust
+    arch-chroot "$MOUNT" bash -c 'pacman -Q rust &>/dev/null && pacman -Rns --noconfirm rust'
 }
 
 install_desktop() {
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
         pacman-contrib \
-        polkit brightnessctl \
+        polkit brightnessctl playerctl \
         mesa vulkan-radeon \
-        sway waybar xdg-desktop-portal-gtk xdg-desktop-portal-wlr \
+        sway swaylock sway-contrib waybar mako xdg-desktop-portal-gtk xdg-desktop-portal-wlr \
         firefox ghostty thunar spotify-launcher \
+        python jq rustup \
         github-cli btop fastfetch
     aur_install visual-studio-code-bin
+    arch-chroot "$MOUNT" su - tk -c 'rustup default stable'
 }
 
 setup_mirrors() {
