@@ -1,5 +1,8 @@
 # sway config file (adapted from i3 config file)
-                                 
+
+# export display/session environment to systemd and dbus
+include /etc/sway/config.d/*
+
 # font
 font pango:JetBrains Mono Slashed NF 10
 
@@ -256,13 +259,14 @@ bindsym $mod+$shift+$olkb25 exec code --new-window --enable-features=UseOzonePla
 exec_always $HOME/.config/sway/scripts/restart.sh
 
 # scripts executed on startup
-exec $HOME/.config/i3/scripts/startup.sh
+exec $HOME/.config/sway/scripts/startup.sh
 
 # restart inplace (preserves current layout)
 bindsym $mod+BackSpace reload
 
 # lock screen
-bindsym $mod+$shift+BackSpace exec $HOME/.config/i3/scripts/lock.sh
+
+bindsym $mod+$shift+BackSpace exec swaylock
 
 # exit sway (logs out of Wayland session)
 # bindsym $mod+$shift+BackSpace exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'

@@ -1,0 +1,12 @@
+font=JetBrains Mono Slashed NF 10
+background-color=#0c0c0cFF
+text-color=#ffffffFF
+border-color=#464646FF
+border-size=2
+border-radius=4
+padding=10
+margin=8
+outer-margin=8
+width=350
+max-icon-size=48
+default-timeout=5000
