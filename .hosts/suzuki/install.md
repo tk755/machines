@@ -1,10 +1,8 @@
-# suzuki install
-
-Fully automated Arch Linux installer for `suzuki` (Framework 13 AMD Ryzen 5 7640U).
+# `suzuki` installation guide
 
 ## Usage
 
-### Install (Automatic)
+### 1. Install (automatic)
 
 > Runs unattended after a single password prompt; reboots when finished.
 
@@ -17,7 +15,7 @@ git clone https://github.com/tk755/dotfiles
 dotfiles/.hosts/suzuki/install
 ```
 
-### Post-Install (Interactive)
+### 2. Post-install (interactive)
 
 > Handles remaining setup that requires user interaction.
 
@@ -28,14 +26,18 @@ nmcli device wifi connect "YourNetworkName" --ask
 suzuki post-install
 ```
 
-### Next Steps (Manual)
+### 3. Next steps (manual)
 
-> Remaining setup that requires a browser and credentials.
+> Requires a browser and credentials.
 
 - Sign into Firefox + Bitwarden
 - Sign into VS Code Settings Sync
 
-## Modifying the Installer
+## Modifying the installer
+
+Always comment non-trivial operations with an [Arch Wiki](https://wiki.archlinux.org) link (include the section anchor).
+
+### Functions
 
 Each function is self-contained: it installs its own packages, writes its own config files, and enables its own services. To disable a feature, comment out its call in `main()`.
 
@@ -45,9 +47,16 @@ Each function is self-contained: it installs its own packages, writes its own co
 - `install_desktop` - user desktop software
 - `aur_install` - helper for AUR packages, usable from any function
 
-Config files are written inline via heredocs. Systemd units and binary artifacts live in `systemd/` or at the project root, each referenced by exactly one owning function.
+### System config files
 
-Comment non-trivial operations with an [Arch Wiki](https://wiki.archlinux.org) link (include the section anchor).
+**Heredocs** for declarative config (key-value settings, ini files). These are short and readable inline.
+
+**Overlays** for files with executable logic (scripts, systemd units, udev rules) and binary artifacts (e.g. ICC profiles). These live in the `overlays/` directory, mirroring their target path on the filesystem. Each overlay is referenced by exactly one function, which copies it to the target filesystem with `install -Dm<mode>`.
+
+```
+suzuki/overlays/       → machine-specific (e.g. MT7921 wifi fixes, ICC profile)
+common/overlays/       → shared across hosts (e.g. OLKB Planck udev rule)
+```
 
 ## References
 
