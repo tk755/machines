@@ -25,6 +25,7 @@
     ]
   },
   "model": "Opus",
+  "effortLevel": "high",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.py",
