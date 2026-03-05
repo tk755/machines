@@ -4,4 +4,8 @@
 font-family = JetBrains Mono Slashed NF
 font-feature = -liga, -calt
 
-theme = tk
+theme = Apple System Colors
+background = #101010
+palette =  3 = #dca509
+palette = 10 = #20cd40
+palette = 11 = #ffc328
