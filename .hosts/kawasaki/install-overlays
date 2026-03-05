@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Install system overlays for kawasaki (power management fixes).
+
+# ensure root user
+if [[ $EUID -ne 0 ]]; then
+    echo -e "\e[1m\e[31mYou must be root to run this script\e[0m"
+    exit 1
+fi
+
+# ensure correct host
+if [[ "$(hostname)" != "kawasaki" ]]; then
+    echo -e "\e[1m\e[31mThis script is only for the host: kawasaki\e[0m"
+    exit 1
+fi
+
+# determine the invoking (non-root) user's home directory
+USER_HOME=$(eval echo ~${SUDO_USER:-$USER})
+OVERLAY_DIR="$USER_HOME/.hosts/kawasaki/overlays"
+
+install -Dm755 "$OVERLAY_DIR/usr/lib/systemd/system-sleep/lid_wakeup_disable" \
+    /usr/lib/systemd/system-sleep/lid_wakeup_disable
+install -Dm755 "$OVERLAY_DIR/usr/lib/systemd/system-sleep/network_hack_hibernation" \
+    /usr/lib/systemd/system-sleep/network_hack_hibernation
+
+echo -e "\e[1m\e[32mOverlays successfully installed\e[0m"
