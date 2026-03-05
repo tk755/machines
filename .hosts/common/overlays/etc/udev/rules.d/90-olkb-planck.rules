@@ -1,0 +1,3 @@
+# disable laptop keyboard when OLKB Planck is connected
+ACTION=="add",    ENV{ID_VENDOR_ID}=="feed", ENV{ID_MODEL_ID}=="6060", RUN+="/usr/local/bin/toggle-laptop-keyboard 1"
+ACTION=="remove", ENV{ID_VENDOR_ID}=="feed", ENV{ID_MODEL_ID}=="6060", RUN+="/usr/local/bin/toggle-laptop-keyboard 0"

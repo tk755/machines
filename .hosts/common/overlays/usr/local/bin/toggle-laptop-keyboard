@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# toggle the laptop keyboard's inhibited state
+# usage: toggle-laptop-keyboard 1 (disable) | 0 (enable)
+for name_file in /sys/class/input/input*/name; do
+    if [[ "$(cat "$name_file")" == "AT Translated Set 2 keyboard" ]]; then
+        echo "$1" > "$(dirname "$name_file")/inhibited"
+        break
+    fi
+done

@@ -32,6 +32,7 @@ CRYPT_DEV="/dev/mapper/${CRYPT_NAME}"
 MOUNT="/mnt"
 BTRFS_OPTS="compress=zstd,noatime,discard=async"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+COMMON_DIR="${SCRIPT_DIR}/../common"
 
 msg() {
     printf '\033[1;35m%s\033[0m\n' "$1"
@@ -383,6 +384,14 @@ setup_power() {
     arch-chroot "$MOUNT" systemctl enable power-profiles-daemon
 }
 
+setup_keyboard() {
+    # disable laptop keyboard when OLKB Planck is connected (udev + sysfs inhibit)
+    install -Dm755 "${COMMON_DIR}/overlays/usr/local/bin/toggle-laptop-keyboard" \
+        "${MOUNT}/usr/local/bin/toggle-laptop-keyboard"
+    install -Dm644 "${COMMON_DIR}/overlays/etc/udev/rules.d/90-olkb-planck.rules" \
+        "${MOUNT}/etc/udev/rules.d/90-olkb-planck.rules"
+}
+
 setup_dropbox() {
     # https://wiki.archlinux.org/title/Dropbox#Required/optional_packages
     # python-gpgme: mandatory binary signature verification
@@ -503,6 +512,9 @@ main() {
     setup_power
     msg "Setting up snapshots"
     setup_snapshots
+    msg "Setting up keyboard"
+    setup_keyboard
+
     msg "Setting up Dropbox"
     setup_dropbox
 
