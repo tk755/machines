@@ -24,10 +24,16 @@ bootstrap   # see --help for more options
 
 ## Making Changes
 
-To make changes to this repository, use the `dotfiles` alias as a `git` command:
+A `dotfiles` alias is provided to interact with the bare repository:
 
 ```bash
-dotfiles add $HOME/.bashrc
+alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+```
+
+Use it like a `git` command:
+
+```bash
+dotfiles add ~/.bashrc
 dotfiles commit -m 'update bashrc'
 dotfiles push
 ```
