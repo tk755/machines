@@ -1,12 +1,12 @@
 ---
-description: Sync local dotfile changes to the dotfiles repository
+description: Commit and push local dotfile changes to the dotfiles repository
 disable-model-invocation: true
 allowed-tools: Skill
 ---
 
 ## Instructions
 
-Apply the context below, then use the Skill tool to invoke the `/commit` skill.
+Immediately invoke the `/commit` skill using the Skill tool. The context below applies to that commit workflow.
 
 ## Context
 
