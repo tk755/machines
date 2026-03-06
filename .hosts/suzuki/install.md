@@ -44,7 +44,8 @@ Each function is self-contained: it installs its own packages, writes its own co
 - `configure_*` - base system, always runs
 - `setup_*` - toggleable features
 - `install_base` - boot-critical packages (pacstrap)
-- `install_desktop` - user desktop software
+- `install_tools` - dev tools and CLI utilities
+- `install_desktop` - graphical desktop environment and GUI apps
 - `aur_install` - helper for AUR packages, usable from any function
 
 ### System config files

@@ -320,17 +320,25 @@ build_paru() {
     arch-chroot "$MOUNT" bash -c 'pacman -Q rust &>/dev/null && pacman -Rns --noconfirm rust'
 }
 
-install_desktop() {
+install_tools() {
+    # dev tools and CLI utilities
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
-        pacman-contrib \
+        pacman-contrib btop fastfetch \
+        openssh wget unzip tree \
+        jq github-cli \
+        python rustup
+    arch-chroot "$MOUNT" su - tk -c 'rustup default stable'
+    # not yet included: miniforge (conda), claude-code
+}
+
+install_desktop() {
+    # graphical desktop environment and GUI apps
+    arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
         polkit brightnessctl playerctl \
         mesa vulkan-radeon \
         sway swaylock sway-contrib waybar mako xdg-desktop-portal-gtk xdg-desktop-portal-wlr \
-        firefox ghostty thunar spotify-launcher \
-        python jq rustup \
-        github-cli btop fastfetch
+        firefox ghostty thunar spotify-launcher
     aur_install visual-studio-code-bin
-    arch-chroot "$MOUNT" su - tk -c 'rustup default stable'
 }
 
 setup_mirrors() {
@@ -496,7 +504,9 @@ main() {
     # packages
     msg "Building paru"
     build_paru
-    msg "Installing desktop packages"
+    msg "Installing tools"
+    install_tools
+    msg "Installing desktop"
     install_desktop
 
     # features
