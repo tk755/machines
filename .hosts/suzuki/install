@@ -325,7 +325,7 @@ install_tools() {
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
         pacman-contrib btop fastfetch \
         openssh wget unzip tree \
-        jq github-cli \
+        jq shellcheck github-cli \
         python rustup
     arch-chroot "$MOUNT" su - tk -c 'rustup default stable'
     # not yet included: miniforge (conda), claude-code
