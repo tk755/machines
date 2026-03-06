@@ -4,7 +4,9 @@ Codified decisions for writing and reviewing bash scripts.
 
 ## Quoting
 
-- Always double-quote variables: `"$var"`, `"${array[@]}"`, `"$(command)"`
+- Prefer `"${var}"` over `"$var"` for named variables (clarity in concatenation)
+- Bare `$1`, `$?`, `$_` for single-character specials and positional parameters
+- Always double-quote expansions: `"${var}"`, `"${array[@]}"`, `"$(command)"`
 - Single quotes for literals passed to other programs: `grep 'pattern'`, `awk '{print $1}'`
 - Quote variables inside `${}` patterns separately: `"${file#"$prefix"}"` (SC2295)
 - Safe to omit quotes: inside `[[ ]]` left side of `==`, inside `(( ))`
