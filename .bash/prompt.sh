@@ -1,23 +1,13 @@
 #!/usr/bin/env bash
 
-# returns system date in nanoseconds
-function timestamp {
-    date +%s%N
-}
-
-# sets $cmd_timer if not set
-function timer_start {
-    cmd_timer=${cmd_timer:-$(timestamp)}
-}
-
-# DEBUG trap is executed just before a command
-# i.e. start the timer before executing a command
-trap timer_start DEBUG
+# PS0 is evaluated after reading a command, before execution (bash 4.4+)
+# ${ } runs in the current shell, not a subshell (bash 5.3+)
+PS0='${ _cmd_start=${EPOCHREALTIME/./}; }'
 
 # returns formatted timer
 function timer_segment {
     # delta microseconds
-    local delta_us=$(( ($(timestamp) - $cmd_timer) / (1000) ))
+    local delta_us=$(( ${EPOCHREALTIME/./} - _cmd_start ))
 
     # extract time for each unit
     local h=$(( (delta_us / (1000 * 1000 * 60 * 60))        ))
@@ -145,12 +135,16 @@ function prompt_symbol {
     echo "${prompt}"
 }
 
-# sets $PS1 and resets the timer
+# sets $PS1
 function set_prompt {
     # build header segments
     # `exit` MUST COME FIRST to display correct exit code
     local exit=$(exit_segment)              # exit code icon
-    local timer=$(timer_segment)            # command execution timer
+    local timer=""
+    if [[ -n $_cmd_start ]]; then
+        timer=$(timer_segment)
+        _cmd_start=""
+    fi
     local git=$(git_segment)                # git branch
     local env=$(env_segment)                # chroot/venv
     local history=$(history_segment)        # history number
@@ -158,38 +152,40 @@ function set_prompt {
 
     # assemble left and right parts of the header and the prompt
     local left right prompt
-    left+="${ANSI_BOLD}${ANSI_LIGHT_RED}\u"          # user
+    left+="${ANSI_BOLD}${ANSI_LIGHT_RED}\u"             # user
     left+="${ANSI_RESET}${ANSI_LIGHT_GRAY} at "
-    left+="${ANSI_BOLD}${ANSI_LIGHT_GREEN}\h"      # hostname
+    left+="${ANSI_BOLD}${ANSI_LIGHT_GREEN}\h"           # hostname
     left+="${ANSI_RESET}${ANSI_LIGHT_GRAY} in "
-    left+="${ANSI_BOLD}${ANSI_LIGHT_BLUE}\w"       # working directory
+    left+="${ANSI_BOLD}${ANSI_LIGHT_BLUE}\w"            # working directory
     if [[ -n ${git} ]]; then
         left+="${ANSI_RESET}${ANSI_LIGHT_GRAY} on "
         left+="${ANSI_BOLD}${ANSI_LIGHT_YELLOW}${git}"  # git branch
     fi
     if [[ -n ${env} ]]; then
         left+="${ANSI_RESET}${ANSI_LIGHT_GRAY} via "
-        left+="${ANSI_BOLD}${ANSI_LIGHT_MAGENTA}${env}"  # chroot/venv
+        left+="${ANSI_BOLD}${ANSI_LIGHT_MAGENTA}${env}" # chroot/venv
     fi
     left+="${ANSI_RESET}"
 
-    right+="${ANSI_LIGHT_GRAY}${timer}"             # command execution time
-    right+="${ANSI_DEFAULT}"
-    right+=" ${exit}"                               # exit code
+    if [[ -n $timer ]]; then
+        right+="${ANSI_LIGHT_GRAY}${timer}${ANSI_DEFAULT} "
+    fi
+    right+="${exit}"                                    # exit code
 
-    prompt+="${ANSI_WHITE}${ANSI_BOLD}${symbol} "   # prompt symbol
+    prompt+="${ANSI_WHITE}${ANSI_BOLD}${symbol} "       # prompt symbol
     prompt+="${ANSI_DEFAULT}${ANSI_RESET}"
 
     # assemble header with filler space between left and right parts and prompt
     # https://superuser.com/a/517110
-    local right_offset=51 # compensate for escape sequences
-    if [[ $right == *"µ"* ]]; then
-        right_offset=$(( ${right_offset} + 1 ))
+    local right_offset=31 # compensate for escape sequences
+    if [[ -n $timer ]]; then
+        right_offset=51
+        if [[ $timer == *"µ"* ]]; then
+            right_offset=$(( right_offset + 1 ))
+        fi
     fi
-    PS1=$(printf "%*s\r%s\n${prompt}" "$(( $(tput cols) + right_offset ))" "${right}" "${left}")
+    PS1=$(printf "%*s\r%s\n${prompt}" "$(( COLUMNS + right_offset ))" "${right}" "${left}")
 
-    # reset the timer
-    unset cmd_timer # this must be last
 }
 
 # PROMPT_COMMAND is executed just before Bash prints the primary prompt
