@@ -14,7 +14,7 @@ set -euo pipefail
 # Bootloader: systemd-boot
 # Swap:       zram ram/2 (no swap partition)
 # Desktop:    sway (Wayland)
-# Network:    NetworkManager + iwd backend (MT7921 stability)
+# Network:    NetworkManager + iwd backend (MT7921 5GHz stability)
 # Power:      power-profiles-daemon (not tlp, AMD/Framework conflict)
 # Snapshots:  snapper + snap-pac (pacman hooks, no timeline)
 #
@@ -293,11 +293,6 @@ EOF
     # rfkill wifi/bt before suspend to prevent MT7921 firmware hangs
     install -Dm644 "${SCRIPT_DIR}/overlays/etc/systemd/system/rfkill-before-sleep.service" \
         "${MOUNT}/etc/systemd/system/rfkill-before-sleep.service"
-
-    # https://wiki.archlinux.org/title/NetworkManager#Network_services_with_NetworkManager_dispatcher
-    # disable wifi power save to prevent MT7921 inactivity disconnects
-    install -Dm755 "${SCRIPT_DIR}/overlays/etc/NetworkManager/dispatcher.d/90-wifi-powersave.sh" \
-        "${MOUNT}/etc/NetworkManager/dispatcher.d/90-wifi-powersave.sh"
 
     arch-chroot "$MOUNT" systemctl enable \
         NetworkManager \
