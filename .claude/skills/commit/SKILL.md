@@ -1,5 +1,5 @@
 ---
-description: Sync local changes to a repository
+description: Commit and push local changes to git. Use when the user asks to commit, push, or sync changes, or has finished making changes and wants to save their work.
 allowed-tools: Bash, Read, Grep, Glob
 ---
 
@@ -27,7 +27,7 @@ For each logical group of changes, propose:
 - Which files to stage
 - A **single-line** commit message (lowercase, no bullet points, no multi-line bodies)
 
-Present the plan and wait for explicit approval before committing. Do not proceed to commit until the user approves both the files and the message.
+Present the plan and wait for explicit approval before committing. Revision requests are not approval — words like "tighter", "reword", or a suggested message mean revise the proposal and wait again. Only proceed when the user explicitly confirms (e.g. "yes", "go ahead", "commit it").
 
 ### 5. Commit
 
@@ -41,9 +41,4 @@ Never add `Co-authored-by` lines or any self-attribution to commits.
 
 ### 6. Push
 
-After committing, ask the user if they want to push. Push with:
-```
-git push
-```
-
-If the push fails because the remote has diverged, stop and ask the user how they want to resolve it. Never force push without explicit approval.
+Push after committing, unless the user said "just commit", "commit only", "no push", or similar. If the push fails because the remote has diverged, stop and ask the user how they want to resolve it. Never force push without explicit approval.
