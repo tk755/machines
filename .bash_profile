@@ -7,6 +7,7 @@ fi
 if [[ -z "$WAYLAND_DISPLAY" ]] && [[ "$XDG_VTNR" -eq 1 ]] && command -v sway &>/dev/null; then
     # vulkan renderer required for color management and HDR
     export WLR_RENDERER=vulkan
+    export XDG_CURRENT_DESKTOP=sway
     exec sway
 elif [[ -z "$DISPLAY" ]] && [[ "$XDG_VTNR" -eq 1 ]] && command -v startx &>/dev/null; then
     exec startx
