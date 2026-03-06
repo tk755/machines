@@ -331,7 +331,7 @@ install_desktop() {
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm \
         polkit brightnessctl playerctl \
         mesa vulkan-radeon \
-        sway swaylock sway-contrib waybar mako xdg-desktop-portal-gtk xdg-desktop-portal-wlr \
+        sway swaylock sway-contrib swaybg waybar mako xdg-desktop-portal-gtk xdg-desktop-portal-wlr \
         firefox ghostty thunar spotify-launcher
     aur_install visual-studio-code-bin
 }
