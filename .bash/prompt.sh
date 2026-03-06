@@ -20,7 +20,6 @@ LIGHT_MAGENTA="\[\e[95m\]"
 timer_segment() {
     [[ -n ${_timer_start} ]] || return
     local delta_us=$(( ${EPOCHREALTIME/./} - _timer_start ))
-    unset _timer_start
 
     # extract time for each unit
     local  h=$((  delta_us / (1000 * 1000 * 60 * 60)         ))
@@ -154,6 +153,7 @@ set_prompt() {
     local timer=$(timer_segment)    # early to minimize overhead
     local git=$(git_segment)
     local venv=$(env_segment)
+    unset _timer_start
 
     local left right prompt
     left+="${BOLD}${LIGHT_RED}\u"               # user
@@ -189,10 +189,15 @@ set_prompt() {
     PS1="${left}\[\e[${right_col}G\]${right}\n${prompt}"
 }
 
-# PS0 expands before command execution (bash 4.4+)
-# ${ } executes in current shell, not a subshell (bash 5.3+)
-# shellcheck disable=SC2016 # expanded at prompt time
-PS0='${ _timer_start=${EPOCHREALTIME/./}; }'
+# start timer before command execution
+# shellcheck disable=SC2016 # single-quotes expanded at prompt time
+if (( BASH_VERSINFO[0] > 5 || (BASH_VERSINFO[0] == 5 && BASH_VERSINFO[1] >= 3) )); then
+    # PS0 expands before execution; ${ } runs in current shell (requires bash 5.3+)
+    PS0='${ _timer_start=${EPOCHREALTIME/./}; }'
+else
+    # DEBUG trap fallback; :- guards against re-setting during prompt internals
+    trap '_timer_start=${_timer_start:-${EPOCHREALTIME/./}}' DEBUG
+fi
 
 # PROMPT_COMMAND runs before displaying PS1
 PROMPT_COMMAND=set_prompt
