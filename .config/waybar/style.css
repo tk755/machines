@@ -1,53 +1,152 @@
 * {
-  font-family: "JetBrains Mono Slashed NF", monospace;
-  font-weight: bold;
-  font-size: 14px;
+    font-family: "JetBrains Mono Slashed NF", monospace;
+    font-size: 13px;
+    font-weight: normal;
 }
 
 window#waybar {
-  background: transparent;     /* no bar background */
+    background: rgba(19, 19, 19, 0.85);
+    border-radius: 4px;
 }
 
-#workspaces button,
+/* all modules: transparent background, light text, subtle hover */
+#custom-arch-icon,
+#custom-arch-updates,
 #disk,
+#custom-disk-usage,
 #memory,
 #cpu,
 #temperature,
-#network,
+#custom-weather,
+#custom-claude,
 #pulseaudio,
-#battery,
 #backlight,
-#clock,
-#window,
-#custom-updates {
-    min-height: 32px;
-    border-radius: 12px;  /* rounded pills */
-    padding: 0 10px;      /* spacing inside pills */
-    margin: 0 4px;        /* spacing between pills */
-    color: #1C1E20;
+#custom-bluetooth,
+#network,
+#battery,
+#custom-power-profile,
+#clock {
+    color: #D8DEE9;
+    background: transparent;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background 200ms ease;
 }
 
+#custom-arch-icon:hover,
+#custom-arch-updates:hover,
+#disk:hover,
+#custom-disk-usage:hover,
+#memory:hover,
+#cpu:hover,
+#temperature:hover,
+#custom-weather:hover,
+#custom-claude:hover,
+#pulseaudio:hover,
+#backlight:hover,
+#custom-bluetooth:hover,
+#network:hover,
+#battery:hover,
+#custom-power-profile:hover,
+#clock:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* module spacing — all gaps defined here */
+.modules-left {
+    margin-left: 6px; /* left edge inset */
+}
+
+.modules-right {
+    margin-right: 6px; /* right edge inset */
+}
+
+#arch-group,
+#battery-group,
+#disk-group,
+#memory-group,
+#cpu-group,
+#custom-claude,
+#workspaces,
+#pulseaudio,
+#backlight,
+#custom-bluetooth,
+#network-group,
+#clock-group {
+    margin: 0 6px; /* gap between modules */
+}
+
+#arch-group:hover,
+#battery-group:hover,
+#disk-group:hover,
+#memory-group:hover,
+#cpu-group:hover,
+#network-group:hover,
+#clock-group:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+}
+
+#custom-arch-icon {
+    padding: 2px 11px 2px 7px; /* center arch glyph (right - left = 4) */
+}
+
+#custom-arch-icon:active {
+    opacity: 0.3;
+}
+
+
+/* workspace dots */
 #workspaces button {
-    padding: 0 4px;
+    background: transparent;
+    color: #464646;
+    min-width: 16px;
+    padding: 0 2px;
+    border: none;
+    border-radius: 0;
 }
 
-#workspaces button.urgent   { background: #EC6798; }
-#workspaces button.visible  { background: #8C8C8C; }
-#workspaces button.focused  { background: #FFFFFF; }
-#workspaces button:hover    { background: #666666; }
-#disk                       { background: #7A84C1; }
-#memory                     { background: #E78958; }
-#cpu                        { background: #4bb84f; }
-#temperature                { background: #EDB83F; }
-#temperature.critical       { background: #eb4d4b; }
-#pulseaudio                 { background: #75A4CD; }
-#pulseaudio:hover           { background: #5a82a7; }
-#battery                    { background: #EC7875; }
-#battery.full               { background: #61C766; }
-#battery.charging           { background: #EC7875; }
-#backlight                  { background: #76B84B; }
-#network                    { background: #BE78D1; }
-#network.disconnected       { background: #EC7875; }
-#clock                      { background: #EBD369; }
-#clock:hover                { background: #c9af45; }
-#custom-updates             { background: #EDB83F; }
+#workspaces button.focused {
+    color: #D8DEE9;
+}
+
+#workspaces button.urgent {
+    color: #F44336;
+}
+
+/* state colors */
+#battery.warning {
+    color: #FBC02D;
+}
+
+#battery.critical {
+    color: #F44336;
+    animation: blink 1s steps(2) infinite;
+}
+
+#battery.charging,
+#battery.full {
+    color: #4CAF50;
+}
+
+#temperature.critical {
+    color: #F44336;
+}
+
+#network.disconnected {
+    color: #F44336;
+}
+
+#pulseaudio.muted {
+    color: #8C8C8C;
+}
+
+#custom-arch-icon.updates-available,
+#custom-arch-updates.updates-available {
+    color: #5b9bf8;
+}
+
+/* blink animation for critical states */
+@keyframes blink {
+    50% { opacity: 0.5; }
+}

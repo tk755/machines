@@ -1,105 +1,289 @@
 {
     "layer": "top",
     "position": "top",
-    "reload_style_on_change": true,
     "margin-left": 8,
     "margin-right": 8,
     "margin-top": 8,
+    "reload_style_on_change": true,
 
     "modules-left": [
-        "disk",
-        "memory",
-        "cpu",
-        "temperature"
+        "group/arch-group",
+        "group/battery-group",
+        "group/disk-group",
+        "group/memory-group",
+        "group/cpu-group"
+        // "custom/claude"
     ],
     "modules-center": [
         "sway/workspaces"
     ],
     "modules-right": [
-        "battery",
+        "backlight",
         "pulseaudio",
-        "network",
-        "clock"
+        "custom/bluetooth",
+        "group/network-group",
+        "group/clock-group"
     ],
 
-    "sway/workspaces": { 
-        "disable-scroll": true, 
-        "format": "{name}" 
+
+    "group/arch-group": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": true
+
+        },
+        "modules": [
+            "custom/arch-icon",
+            "custom/arch-updates"
+        ]
     },
 
-    "disk": {
+    "custom/arch-icon": {
+        "format": "",
+        "return-type": "json",
+        "interval": 600,
+        "signal": 1,
+        "exec": "~/.config/waybar/scripts/updates.sh",
+        "on-click": "pkill -SIGRTMIN+1 waybar",
+        "tooltip": false
+    },
+
+    "custom/arch-updates": {
+        "format": "{}",
+        "return-type": "json",
+        "interval": 600,
+        "signal": 1,
+        "exec": "~/.config/waybar/scripts/updates.sh detail",
+        "tooltip": false
+    },
+
+    "group/disk-group": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": true
+
+        },
+        "modules": [
+            "disk#main",
+            "custom/disk-usage"
+        ]
+    },
+
+    "disk#main": {
+        "interval": 30,
+        "format": " {percentage_used}%",
         "path": "/",
-        "interval": 10,
-        "format": " {percentage_used}%",
-        "tooltip-format": "Storage: {used} / {total} ({percentage_used}%)"
+        "tooltip": false
     },
-    
-    "memory": {
-        "interval": 2,
-        "format": " {percentage}%",
-        "tooltip-format": "RAM: {used:0.2f}GiB / {total:0.2f}GiB ({percentage}%)"
+
+    "custom/disk-usage": {
+        "interval": 30,
+        "exec": "~/.config/waybar/scripts/disk-usage.sh",
+        "on-click": "ghostty --class=com.waybar.btop -e btop",
+        "tooltip": false
     },
-    
+
+    "group/memory-group": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": true
+
+        },
+        "modules": [
+            "memory#main",
+            "memory#usage"
+        ]
+    },
+
+    "memory#main": {
+        "interval": 5,
+        "format": " {percentage}%",
+        "tooltip": false
+    },
+
+    "memory#usage": {
+        "interval": 5,
+        "format": "{used:0.0f} GiB / {total:0.0f} GiB",
+        "on-click": "ghostty --class=com.waybar.btop -e btop",
+        "tooltip": false
+    },
+
+    "group/cpu-group": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": true
+
+        },
+        "modules": [
+            "cpu",
+            "temperature"
+        ]
+    },
+
     "cpu": {
         "interval": 2,
-        "format": " {usage}%"
+        "format": " {usage}%",
+        "on-click": "ghostty --class=com.waybar.btop -e btop",
+        "tooltip": false
     },
 
     "temperature": {
-        "interval": 2,
-        // specific to ducati
-        "hwmon-path": "/sys/devices/platform/coretemp.0/hwmon/hwmon3/temp1_input",
+        "hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:18.3/hwmon",
+        "input-filename": "temp1_input",
         "critical-threshold": 80,
-        "format": "{icon} {temperatureC}°C",
-        "format-icons": ["", "", ""],
-        "tooltip-format": "CPU Package Temperature"
+        "format": "{temperatureC}°C",
+        "tooltip": false
+    },
+
+    "sway/workspaces": {
+        "disable-scroll": true,
+        "format": "{icon}",
+        "format-icons": {
+            "focused": "●",
+            "default": "·",
+            "urgent": "●"
+        }
+    },
+
+    "group/clock-group": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": false
+
+        },
+        "modules": [
+            "clock#main",
+            "clock#date"
+        ]
+    },
+
+    "clock#main": {
+        "interval": 60,
+        "format": "{:%I:%M %p}",
+        "tooltip": false
+    },
+
+    "clock#date": {
+        "interval": 60,
+        "format": "{:%a, %b %d}",
+        "tooltip": false
+    },
+
+    "custom/weather": {
+        "format": "{}",
+        "return-type": "json",
+        "interval": 900,
+        "exec": "~/.config/waybar/scripts/weather.sh",
+        "tooltip": false
+    },
+
+    "custom/claude": {
+        "format": "{}",
+        "return-type": "json",
+        "interval": 300,
+        "exec": "~/.config/waybar/scripts/claude.sh",
+        "tooltip": false
     },
 
     "pulseaudio": {
-        "interval": 2,
         "format": "{volume}% {icon}",
-        "format-muted": "Muted ",
-        "format-icons": ["", "", ""],
-        "scroll-step": 2,
+        "format-muted": "muted 󰝟 ",
+        "format-icons": {
+            "default": ["󰕿", "󰖀", "󰕾"]
+        },
         "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
-        "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-",
-        "on-scroll-down": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 2%+"
+        "on-scroll-up": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 1%-",
+        "on-scroll-down": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 1%+",
+        "tooltip": false
     },
 
-    "battery": {
-        "interval": 10,
-        "full-at": 97,
-        "format": "{capacity}% {icon}",
-        "format-charging": "{capacity}% ",
-        "format-plugged":  "{capacity}% ",
-        "format-full":     "Full ",
-        "format-icons": ["", "", "", "", ""],
-        "states": { "good": 60, "warning": 30, "critical": 15 },
-        "hide-if-unsupported": true
+    "backlight": {
+        "format": "{percent}% {icon}",
+        "format-icons": ["󰃞", "󰃟", "󰃠"],
+        "on-scroll-up": "brightnessctl set 1%-",
+        "on-scroll-down": "brightnessctl set +1%",
+        "tooltip": false
     },
 
-    "network": {
+    "custom/bluetooth": {
+        "format": "{}",
+        "return-type": "json",
         "interval": 5,
-        "format-wifi":       "{essid} ",
-        "format-ethernet":   "{ipaddr}/{cidr} ",
-        "format-disconnected": "Disconnected ",
-        "tooltip-format":    "{ifname} — {ipaddr}"
+        "exec": "~/.config/waybar/scripts/bluetooth.sh",
+        "tooltip": false
     },
 
-    "clock": {
-        "interval": 1,
-        "format": "{:%I:%M:%S %p} ",
-        "tooltip-format": "<tt>{calendar}</tt>",
-        "calendar": {
-            "mode": "month",
-            "format": {
-                "today": "<span background='#FFFFFF' color='#1C1E20'>{}</span>"
-            }
-        }
+    "group/network-group": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": false
+
+        },
+        "modules": [
+            "network#main",
+            "network#ip"
+        ]
+    },
+
+    "network#main": {
+        "interval": 5,
+        "format-wifi": "{essid} {icon}",
+        "format-ethernet": "{ipaddr}/{cidr} {icon}",
+        "format-disconnected": "disconnected 󰤭",
+        "format-icons": {
+            "wifi": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+            "ethernet": ["󰈀"]
+        },
+        "on-click": "ghostty --class=com.waybar.nmtui -e nmtui",
+        "tooltip": false
+    },
+
+    "network#ip": {
+        "interval": 5,
+        "format-wifi": "{ipaddr}",
+        "format-ethernet": "",
+        "format-disconnected": "",
+        "tooltip": false
+    },
+
+    "group/battery-group": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": true
+
+        },
+        "modules": [
+            "battery#main",
+            "custom/power-profile"
+        ]
+    },
+
+    "battery#main": {
+        "interval": 30,
+        "format": "{icon} {capacity}%",
+        "format-icons": {
+            "default": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+            "charging": ["󰢟", "󰢜", "󰂆", "󰂇", "󰂈", "󰢝", "󰂉", "󰢞", "󰂊", "󰂋", "󰂅"]
+        },
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "tooltip": false
+    },
+
+    "custom/power-profile": {
+        "format": "{}",
+        "return-type": "json",
+        "interval": 30,
+        "exec": "~/.config/waybar/scripts/power-profile.sh",
+        "tooltip": false
     }
 }
-
-// for the future:
-//  - mic
-//  - mic muted
-//  - bluetooth
