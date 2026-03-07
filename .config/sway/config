@@ -186,6 +186,10 @@ bindsym $mod+$shift+$olkb35 floating toggle
 # drag floating windows with Mouse+$mod
 floating_modifier $mod
 
+# waybar floating windows
+for_window [app_id="com.waybar.btop"] floating enable, resize set 1000 600
+for_window [app_id="com.waybar.nmtui"] floating enable, resize set 600 400
+
 # border and colors
 
 default_border pixel 2
@@ -235,11 +239,11 @@ bindsym $mod+$shift+$olkb04 nop
 bindsym $mod+$olkb05 exec spotify
 bindsym $mod+$shift+$olkb05 nop
 
-bindsym $mod+$olkb14 exec firefox --new-window
-bindsym $mod+$shift+$olkb14 exec firefox --new-window --private-window
+bindsym $mod+$olkb14 exec ghostty
+bindsym $mod+$shift+$olkb14 nop
 
-bindsym $mod+$olkb15 exec ghostty
-bindsym $mod+$shift+$olkb15 nop
+bindsym $mod+$olkb15 exec firefox --new-window
+bindsym $mod+$shift+$olkb15 exec firefox --new-window --private-window
 
 bindsym $mod+$olkb24 exec thunar
 bindsym $mod+$shift+$olkb24 nop
