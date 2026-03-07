@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=Colloid-Darker
+Comment=An Flat Gtk+ theme based on Elegant Design
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=Colloid-Darker
+MetacityTheme=Colloid-Darker
+IconTheme=Colloid-Dark
+CursorTheme=Colloid-Mid2-cursors
+ButtonLayout=close,minimize,maximize:menu
