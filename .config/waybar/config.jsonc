@@ -20,7 +20,7 @@
     "modules-right": [
         "backlight",
         "pulseaudio",
-        "custom/bluetooth",
+        "group/bluetooth-group",
         "group/network-group",
         "group/clock-group"
     ],
@@ -54,7 +54,8 @@
         "return-type": "json",
         "interval": 600,
         "signal": 1,
-        "exec": "~/.config/waybar/scripts/updates.sh detail",
+        "exec": "~/.config/waybar/scripts/updates.sh",
+        "on-click": "pkill -SIGRTMIN+1 waybar",
         "tooltip": false
     },
 
@@ -210,12 +211,32 @@
         "tooltip": false
     },
 
+    "group/bluetooth-group": {
+        "orientation": "horizontal",
+        "drawer": {
+            "transition-duration": 300,
+            "transition-left-to-right": false
+        },
+        "modules": [
+            "custom/bluetooth",
+            "custom/bluetooth-detail"
+        ]
+    },
+
     "custom/bluetooth": {
         "format": "{}",
         "return-type": "json",
         "interval": 5,
         "exec": "~/.config/waybar/scripts/bluetooth.sh",
         "tooltip": false
+    },
+
+    "custom/bluetooth-detail": {
+        "format": "{}",
+        "return-type": "json",
+        "interval": 5,
+        "exec": "~/.config/waybar/scripts/bluetooth.sh detail",
+        "tooltip": true
     },
 
     "group/network-group": {

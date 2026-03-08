@@ -1,24 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cache="/tmp/waybar-updates"
+cache="/tmp/waybar-updates-count"
 
-# detail mode: read from cache
-if [[ "${1:-}" == "detail" ]]; then
-    if [[ -f "${cache}" ]]; then
-        cat "${cache}"
-    else
-        printf '{"text": ""}\n'
-    fi
-    exit
+# fetch and cache update count (use cache on failure or "cache" arg)
+if [[ "${1:-}" != "cache" ]] && count=$(checkupdates 2>/dev/null | wc -l); then
+    printf '%d' "${count}" > "${cache}"
+else
+    count=$(cat "${cache}" 2>/dev/null) || count=0
 fi
 
-# icon mode: run checkupdates, cache result, output class only
-count=$(checkupdates 2>/dev/null | wc -l)
 if (( count > 0 )); then
-    printf '{"text": "%d updates", "class": "updates-available"}\n' "${count}" > "${cache}"
-    printf '{"text": "", "class": "updates-available"}\n'
+    printf '{"text": "%d updates", "class": "updates-available"}\n' "${count}"
 else
-    printf '{"text": "", "class": "up-to-date"}\n' > "${cache}"
-    printf '{"text": "", "class": "up-to-date"}\n'
+    printf '{"text": "up-to-date", "class": "up-to-date"}\n'
 fi

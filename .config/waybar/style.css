@@ -22,6 +22,7 @@ window#waybar {
 #pulseaudio,
 #backlight,
 #custom-bluetooth,
+#custom-bluetooth-detail,
 #network,
 #battery,
 #custom-power-profile,
@@ -45,6 +46,7 @@ window#waybar {
 #pulseaudio:hover,
 #backlight:hover,
 #custom-bluetooth:hover,
+#custom-bluetooth-detail:hover,
 #network:hover,
 #battery:hover,
 #custom-power-profile:hover,
@@ -70,7 +72,7 @@ window#waybar {
 #workspaces,
 #pulseaudio,
 #backlight,
-#custom-bluetooth,
+#bluetooth-group,
 #network-group,
 #clock-group {
     margin: 0 6px; /* gap between modules */
@@ -81,6 +83,7 @@ window#waybar {
 #disk-group:hover,
 #memory-group:hover,
 #cpu-group:hover,
+#bluetooth-group:hover,
 #network-group:hover,
 #clock-group:hover {
     background: rgba(255, 255, 255, 0.06);
