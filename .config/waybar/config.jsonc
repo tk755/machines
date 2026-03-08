@@ -282,7 +282,7 @@
         },
         "modules": [
             "battery#main",
-            "custom/power-profile"
+            "custom/battery-detail"
         ]
     },
 
@@ -300,11 +300,11 @@
         "tooltip": false
     },
 
-    "custom/power-profile": {
+    "custom/battery-detail": {
         "format": "{}",
         "return-type": "json",
         "interval": 30,
-        "exec": "~/.config/waybar/scripts/power-profile.sh",
-        "tooltip": false
+        "exec": "~/.config/waybar/scripts/battery-detail.sh",
+        "tooltip": true
     }
 }
