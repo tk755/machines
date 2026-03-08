@@ -10,8 +10,10 @@ else
     count=$(cat "${cache}" 2>/dev/null) || count=0
 fi
 
+# output json for waybar
+checked=$(stat -c '%Y' "${cache}" 2>/dev/null) && checked=$(date -d "@${checked}" '+%-I:%M %p') || checked=""
 if (( count > 0 )); then
-    printf '{"text": "%d updates", "class": "updates-available"}\n' "${count}"
+    printf '{"text": "%d updates", "tooltip": "checked %s", "class": "updates-available"}\n' "${count}" "${checked}"
 else
-    printf '{"text": "up-to-date", "class": "up-to-date"}\n'
+    printf '{"text": "up-to-date", "tooltip": "checked %s", "class": "up-to-date"}\n' "${checked}"
 fi
