@@ -136,7 +136,8 @@ window#waybar {
     color: #F44336;
 }
 
-#network.disconnected {
+#network.disconnected,
+#network.disabled {
     color: #F44336;
 }
 

@@ -44,7 +44,7 @@
         "return-type": "json",
         "interval": 600,
         "signal": 1,
-        "exec": "~/.config/waybar/scripts/updates.sh",
+        "exec": "~/.config/waybar/scripts/arch-updates.sh",
         "on-click": "pkill -SIGRTMIN+1 waybar",
         "tooltip": false
     },
@@ -54,7 +54,7 @@
         "return-type": "json",
         "interval": 600,
         "signal": 1,
-        "exec": "~/.config/waybar/scripts/updates.sh",
+        "exec": "~/.config/waybar/scripts/arch-updates.sh",
         "on-click": "pkill -SIGRTMIN+1 waybar",
         "tooltip": true
     },
@@ -257,6 +257,7 @@
         "format-wifi": "{essid} {icon}",
         "format-ethernet": "{ipaddr}/{cidr} {icon}",
         "format-disconnected": "disconnected 󰤭",
+        "format-disabled": "disabled 󰤮",
         "format-icons": {
             "wifi": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
             "ethernet": ["󰈀"]
