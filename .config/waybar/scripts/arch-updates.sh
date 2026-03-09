@@ -10,8 +10,9 @@ else
     count=$(cat "${cache}" 2>/dev/null) || count=0
 fi
 
-# output json for waybar
+# get cache timestamp for tooltip
 checked=$(stat -c '%Y' "${cache}" 2>/dev/null) && checked=$(date -d "@${checked}" '+%-I:%M %p') || checked=""
+
 if (( count > 0 )); then
     printf '{"text": "%d updates", "tooltip": "refreshed: %s", "class": "updates-available"}\n' "${count}" "${checked}"
 else

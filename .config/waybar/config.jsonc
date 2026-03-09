@@ -25,13 +25,11 @@
         "group/clock-group"
     ],
 
-
     "group/arch-group": {
         "orientation": "horizontal",
         "drawer": {
             "transition-duration": 300,
             "transition-left-to-right": true
-
         },
         "modules": [
             "custom/arch-icon",
@@ -64,7 +62,6 @@
         "drawer": {
             "transition-duration": 300,
             "transition-left-to-right": true
-
         },
         "modules": [
             "disk#main",
@@ -91,7 +88,6 @@
         "drawer": {
             "transition-duration": 300,
             "transition-left-to-right": true
-
         },
         "modules": [
             "memory#main",
@@ -117,7 +113,6 @@
         "drawer": {
             "transition-duration": 300,
             "transition-left-to-right": true
-
         },
         "modules": [
             "cpu",
@@ -155,7 +150,6 @@
         "drawer": {
             "transition-duration": 300,
             "transition-left-to-right": false
-
         },
         "modules": [
             "clock#main",
@@ -193,7 +187,7 @@
 
     "pulseaudio": {
         "format": "{volume}% {icon}",
-        "format-muted": "muted 󰝟 ",
+        "format-muted": "muted 󰝟",
         "format-icons": {
             "default": ["󰕿", "󰖀", "󰕾"]
         },
@@ -244,7 +238,6 @@
         "drawer": {
             "transition-duration": 300,
             "transition-left-to-right": false
-
         },
         "modules": [
             "network#main",
@@ -279,7 +272,6 @@
         "drawer": {
             "transition-duration": 300,
             "transition-left-to-right": true
-
         },
         "modules": [
             "battery#main",

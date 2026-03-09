@@ -141,7 +141,8 @@ window#waybar {
     color: #F44336;
 }
 
-#pulseaudio.muted {
+#pulseaudio.muted,
+#custom-bluetooth.disconnected {
     color: #8C8C8C;
 }
 
