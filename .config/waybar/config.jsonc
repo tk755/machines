@@ -3,6 +3,7 @@
     "position": "top",
     "margin-left": 8,
     "margin-right": 8,
+    "height": 27,
     "margin-top": 8,
     "reload_style_on_change": true,
 
@@ -140,7 +141,7 @@
         "format": "{icon}",
         "format-icons": {
             "focused": "●",
-            "default": "·",
+            "default": "•",
             "urgent": "●"
         }
     },
@@ -282,7 +283,7 @@
         },
         "modules": [
             "battery#main",
-            "custom/battery-detail"
+            "battery#detail"
         ]
     },
 
@@ -301,11 +302,15 @@
         "tooltip": false
     },
 
-    "custom/battery-detail": {
-        "format": "{}",
-        "return-type": "json",
+    "battery#detail": {
         "interval": 30,
-        "exec": "~/.config/waybar/scripts/battery-detail.sh",
-        "tooltip": true
+        "format": "{time}",
+        "format-full": "",
+        "states": {
+            "warning": 30,
+            "low": 20,
+            "critical": 10
+        },
+        "tooltip": false
     }
 }
