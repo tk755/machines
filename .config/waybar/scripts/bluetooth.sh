@@ -12,9 +12,12 @@ if [[ "${powered}" != "yes" ]]; then
     exit
 fi
 
-# exit early if no devices connected (mapfile produces [""] on empty input)
-mapfile -t macs < <(bluetoothctl devices Connected | awk '{print $2}')
-if (( ${#macs[@]} == 0 )) || [[ -z "${macs[0]}" ]]; then
+# filter to actually connected devices (bluetoothctl briefly lists reconnecting devices)
+macs=()
+while read -r _ mac _; do
+    [[ -n "${mac}" ]] && bluetoothctl info "${mac}" 2>/dev/null | grep -q "Connected: yes" && macs+=("${mac}")
+done < <(bluetoothctl devices Connected)
+if (( ${#macs[@]} == 0 )); then
     if [[ "${1:-}" == "detail" ]]; then
         printf '{"text": ""}\n'
     else
