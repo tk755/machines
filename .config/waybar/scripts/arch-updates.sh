@@ -3,12 +3,15 @@ set -euo pipefail
 
 cache="/tmp/waybar-updates-count"
 
-# fetch and cache update count (use cache on failure or "cache" arg)
+# fetch and cache update count (fall back to cache on failure or "cache" arg)
 if [[ "${1:-}" != "cache" ]] && count=$(checkupdates 2>/dev/null | wc -l); then
     printf '%d' "${count}" > "${cache}"
 else
     count=$(cat "${cache}" 2>/dev/null) || count=0
 fi
+
+# signal icon module to sync class from cache
+[[ "${1:-}" != "cache" ]] && pkill -SIGRTMIN+2 waybar 2>/dev/null || true
 
 # get cache timestamp for tooltip
 checked=$(stat -c '%Y' "${cache}" 2>/dev/null) && checked=$(date -d "@${checked}" '+%-I:%M %p') || checked=""
