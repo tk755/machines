@@ -5,7 +5,34 @@
 }
 
 window#waybar {
-    background: rgba(19, 19, 19, 0.85);
+    background: rgba(22, 24, 30, 0.85);
+    border-radius: 99px;
+}
+
+/* module spacing — all gaps defined here */
+.modules-left {
+    margin-left: 6px; /* left edge inset */
+}
+
+.modules-right {
+    margin-right: 6px; /* right edge inset */
+}
+
+/* top-level module and group spacing */
+#arch-group,
+#battery-group,
+#disk-group,
+#memory-group,
+#cpu-group,
+#custom-claude,
+#systemd-failed-units,
+#workspaces,
+#pulseaudio,
+#backlight,
+#bluetooth-group,
+#network-group,
+#clock-group {
+    margin: 0 6px; /* gap between modules */
     border-radius: 4px;
 }
 
@@ -19,6 +46,7 @@ window#waybar {
 #temperature,
 #custom-weather,
 #custom-claude,
+#systemd-failed-units,
 #pulseaudio,
 #backlight,
 #custom-bluetooth,
@@ -34,6 +62,7 @@ window#waybar {
     transition: background 200ms ease;
 }
 
+/* hover highlight for all modules and groups */
 #custom-arch-icon:hover,
 #custom-arch-updates:hover,
 #disk:hover,
@@ -43,6 +72,7 @@ window#waybar {
 #temperature:hover,
 #custom-weather:hover,
 #custom-claude:hover,
+#systemd-failed-units:hover,
 #pulseaudio:hover,
 #backlight:hover,
 #custom-bluetooth:hover,
@@ -50,34 +80,7 @@ window#waybar {
 #network:hover,
 #battery:hover,
 #custom-battery-detail:hover,
-#clock:hover {
-    background: rgba(255, 255, 255, 0.06);
-}
-
-/* module spacing — all gaps defined here */
-.modules-left {
-    margin-left: 6px; /* left edge inset */
-}
-
-.modules-right {
-    margin-right: 6px; /* right edge inset */
-}
-
-#arch-group,
-#battery-group,
-#disk-group,
-#memory-group,
-#cpu-group,
-#custom-claude,
-#workspaces,
-#pulseaudio,
-#backlight,
-#bluetooth-group,
-#network-group,
-#clock-group {
-    margin: 0 6px; /* gap between modules */
-}
-
+#clock:hover,
 #arch-group:hover,
 #battery-group:hover,
 #disk-group:hover,
@@ -87,24 +90,19 @@ window#waybar {
 #network-group:hover,
 #clock-group:hover {
     background: rgba(255, 255, 255, 0.06);
-    border-radius: 4px;
 }
 
+/* icon spacing adjustments */
 #custom-arch-icon {
     padding: 2px 11px 2px 7px; /* center arch glyph (right - left = 4) */
 }
-
-#custom-arch-icon:active {
-    opacity: 0.3;
-}
-
 
 /* workspace dots */
 #workspaces button {
     background: transparent;
     color: #464646;
     min-width: 16px;
-    padding: 0 2px;
+    padding: 0 3px;
     border: none;
     border-radius: 0;
 }
@@ -113,34 +111,7 @@ window#waybar {
     color: #D8DEE9;
 }
 
-#workspaces button.urgent {
-    color: #F44336;
-}
-
 /* state colors */
-#battery.warning {
-    color: #FBC02D;
-}
-
-#battery.critical {
-    color: #F44336;
-    animation: blink 1s steps(2) infinite;
-}
-
-#battery.charging,
-#battery.full {
-    color: #4CAF50;
-}
-
-#temperature.critical {
-    color: #F44336;
-}
-
-#network.disconnected,
-#network.disabled {
-    color: #F44336;
-}
-
 #pulseaudio.muted,
 #custom-bluetooth.disconnected {
     color: #8C8C8C;
@@ -151,9 +122,32 @@ window#waybar {
     color: #5b9bf8;
 }
 
+#battery.charging,
+#battery.full {
+    color: #4CAF50;
+}
+
+#battery.warning {
+    color: #FBC02D;
+}
+
+#battery.low,
+#battery.critical,
+#temperature.critical,
+#systemd-failed-units.degraded,
+#network.disconnected,
+#network.disabled,
+#workspaces button.urgent {
+    color: #F44336;
+}
+
+#battery.critical {
+    animation: pulse 1s steps(2) infinite;
+}
+
 /* tooltips */
 tooltip {
-    background: rgba(19, 19, 19, 0.85);
+    background: rgba(22, 24, 30, 0.85);
     border-radius: 4px;
     border: none;
 }
@@ -163,7 +157,7 @@ tooltip label {
     font-size: 12px;
 }
 
-/* blink animation for critical states */
-@keyframes blink {
-    50% { opacity: 0.5; }
+/* critical battery animation */
+@keyframes pulse {
+    50% { opacity: 0.4; }
 }
