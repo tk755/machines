@@ -11,8 +11,9 @@
         "group/battery-group",
         "group/disk-group",
         "group/memory-group",
-        "group/cpu-group"
+        "group/cpu-group",
         // "custom/claude"
+        "systemd-failed-units"
     ],
     "modules-center": [
         "sway/workspaces"
@@ -40,9 +41,8 @@
     "custom/arch-icon": {
         "format": "",
         "return-type": "json",
-        "interval": 600,
-        "signal": 1,
-        "exec": "~/.config/waybar/scripts/arch-updates.sh",
+        "signal": 2,
+        "exec": "~/.config/waybar/scripts/arch-updates.sh cache",
         "on-click": "pkill -SIGRTMIN+1 waybar",
         "tooltip": false
     },
@@ -185,6 +185,13 @@
         "tooltip": false
     },
 
+    "systemd-failed-units": {
+        "format": "󰗖 {nr_failed} failed",
+        "hide-on-ok": true,
+        "system": true,
+        "user": true
+    },
+
     "pulseaudio": {
         "format": "{volume}% {icon}",
         "format-muted": "muted 󰝟",
@@ -288,7 +295,8 @@
         },
         "states": {
             "warning": 30,
-            "critical": 15
+            "low": 20,
+            "critical": 10
         },
         "tooltip": false
     },
