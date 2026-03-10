@@ -4,7 +4,8 @@ set -euo pipefail
 cache="/tmp/waybar-updates-count"
 
 # fetch and cache update count (fall back to cache on failure or "cache" arg)
-if [[ "${1:-}" != "cache" ]] && count=$(checkupdates 2>/dev/null | wc -l); then
+# checkupdates exits 0 = updates, 2 = no updates, 1 = error
+if [[ "${1:-}" != "cache" ]] && { count=$(checkupdates 2>/dev/null | wc -l) || (( $? == 2 )); }; then
     printf '%d' "${count}" > "${cache}"
 else
     count=$(cat "${cache}" 2>/dev/null) || count=0
