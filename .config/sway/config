@@ -85,9 +85,9 @@ set $ws0 "0"
 
 # colors 
 set $fg #D8DEE9
-set $bg #0c0c0c
-set $fbg #464646
-set $ind #cccccc
+set $bg #14161c
+set $fbg #363840
+set $ind #5b9bf8
 
 
 # ██     ██  ██████  ██████  ██   ██ ███████ ██████   █████   ██████ ███████ ███████ 
@@ -231,7 +231,7 @@ bindsym $mod+$shift+$olkb28 move container to output right; focus output right
 # ██      ██   ██  ██████   ██████  ██   ██ ██   ██ ██      ██ ███████
 
 
-bindsym $mod+Escape exec rofi -show drun
+bindsym $mod+Escape exec fuzzel
 
 bindsym $mod+$olkb04 nop
 bindsym $mod+$shift+$olkb04 nop
