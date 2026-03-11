@@ -19,7 +19,7 @@ _host_cmd() {
             printf '%s: no commands available\n' "$HOSTNAME" >&2
             return 1
         fi
-        printf '%s\n' "$cmds"
+        printf '\033[01;32m%s\033[0m\n' "$(printf '%s\n' "$cmds" | column)"
         return
     fi
 
