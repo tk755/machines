@@ -12,6 +12,7 @@ An Arch Linux machine.
 
 ## References
 
+- `~/README.md`: dotfiles structure, scripts organization, and conventions
 - `./install` and `./post-install`: install scripts; source of truth for system configuration, packages, and services
 - `./install.md`: reference guide for using the install scripts and updating them
 
@@ -26,7 +27,8 @@ An Arch Linux machine.
     - `bootctl status` for systemd-boot, kernel, and initrd state
     - `cryptsetup luksDump /dev/nvme0n1p2` for LUKS/TPM2 enrollment status
     - `btrfs filesystem usage /` and `snapper -c root list` for filesystem and snapshot state
-    - `nmcli` and `rfkill` for network and wireless radio state
+    - `iw dev wlan0`, `nmcli` and `rfkill` for network and wireless radio state
+    - `journalctl -b -u iwd` for WiFi daemon events (roaming, deauth, disconnects)
     - `pacdiff -o` for unmerged `.pacnew` config files
 - Reference relevant documentation for up-to-date information:
     - [Arch Wiki](https://wiki.archlinux.org/)
