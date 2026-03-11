@@ -230,6 +230,7 @@
         "return-type": "json",
         "interval": 5,
         "exec": "~/.config/waybar/scripts/bluetooth.sh",
+        "on-click": "ghostty --class=com.waybar.bluetui -e bluetui",
         "tooltip": false
     },
 
