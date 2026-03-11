@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# refresh waybar updates module on exit
+trap 'pkill -SIGRTMIN+1 waybar 2>/dev/null || true' EXIT
+
+# move up one line and clear it
+replace_line=$'\033[1A\033[2K'
+
+printf 'Checking for updates...\n'
+if ! output=$(checkupdates); then
+    printf '%sSystem is up to date.\n' "${replace_line}"
+    exit 0
+fi
+
+count=$(printf '%s\n' "${output}" | wc -l)
+printf '%s%d update%s:\n' "${replace_line}" "${count}" "$( (( count == 1 )) || printf s)"
+printf '%s\n\n' "${output}"
+
+read -rp "Upgrade packages? [y/N] " reply
+if [[ "${reply}" =~ ^[Yy]$ ]]; then
+    sudo pacman -Syu --noconfirm
+fi

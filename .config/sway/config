@@ -187,9 +187,7 @@ bindsym $mod+$shift+$olkb35 floating toggle
 floating_modifier $mod
 
 # waybar floating windows
-for_window [app_id="com.waybar.btop"] floating enable, resize set 1000 600
-for_window [app_id="com.waybar.nmtui"] floating enable, resize set 600 400
-for_window [app_id="com.waybar.bluetui"] floating enable, resize set 600 400
+for_window [app_id="com.waybar.popup"] floating enable, resize set 800 500
 
 # border and colors
 

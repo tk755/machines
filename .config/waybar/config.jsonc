@@ -44,7 +44,7 @@
         "return-type": "json",
         "signal": 2,
         "exec": "~/.config/waybar/scripts/arch-updates.sh cache",
-        "on-click": "pkill -SIGRTMIN+1 waybar",
+        "on-click": "ghostty --class=com.waybar.popup --wait-after-command -e ~/.hosts/suzuki/upgrade",
         "tooltip": false
     },
 
@@ -80,7 +80,6 @@
     "custom/disk-usage": {
         "interval": 30,
         "exec": "~/.config/waybar/scripts/disk-usage.sh",
-        "on-click": "ghostty --class=com.waybar.btop -e btop",
         "tooltip": false
     },
 
@@ -105,7 +104,6 @@
     "memory#usage": {
         "interval": 5,
         "format": "{used:0.0f} GiB / {total:0.0f} GiB",
-        "on-click": "ghostty --class=com.waybar.btop -e btop",
         "tooltip": false
     },
 
@@ -124,7 +122,6 @@
     "cpu": {
         "interval": 2,
         "format": " {usage}%",
-        "on-click": "ghostty --class=com.waybar.btop -e btop",
         "tooltip": false
     },
 
@@ -230,7 +227,7 @@
         "return-type": "json",
         "interval": 5,
         "exec": "~/.config/waybar/scripts/bluetooth.sh",
-        "on-click": "ghostty --class=com.waybar.bluetui -e bluetui",
+        "on-click": "ghostty --class=com.waybar.popup -e bluetui",
         "tooltip": false
     },
 
@@ -264,7 +261,7 @@
             "wifi": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
             "ethernet": ["󰈀"]
         },
-        "on-click": "ghostty --class=com.waybar.nmtui -e nmtui",
+        "on-click": "ghostty --class=com.waybar.popup -e nmtui",
         "tooltip": false
     },
 
