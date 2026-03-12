@@ -321,7 +321,8 @@ install_tools() {
         pacman-contrib btop fastfetch \
         openssh wget unzip tree \
         jq shellcheck github-cli \
-        python uv ruff rustup
+        python uv ruff rustup \
+        tealdeer
     arch-chroot "$MOUNT" su - tk -c 'rustup default stable'
     arch-chroot "$MOUNT" su - tk -c 'curl -fsSL https://claude.ai/install.sh | bash'
 }
