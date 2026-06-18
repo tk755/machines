@@ -2,8 +2,8 @@
   "env": {
     "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
   },
-  "includeCoAuthoredBy": false,
-  "includeGitInstructions": false,
+  "model": "Opus",
+  "effortLevel": "xhigh",
   "permissions": {
     "allow": [
       "Bash",
@@ -23,8 +23,6 @@
       "Bash(wget *)"
     ]
   },
-  "model": "Opus",
-  "effortLevel": "high",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.py",
@@ -32,5 +30,11 @@
   },
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true
-  }
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "includeGitInstructions": false,
+  "plansDirectory": "./.claude/plans"
 }
