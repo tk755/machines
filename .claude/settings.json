@@ -23,6 +23,13 @@
       "Bash(wget *)"
     ]
   },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "worktree": {
+    "bgIsolation": "none"
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.py",
@@ -30,10 +37,6 @@
   },
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true
-  },
-  "attribution": {
-    "commit": "",
-    "pr": ""
   },
   "includeGitInstructions": false,
   "plansDirectory": "./.claude/plans"
