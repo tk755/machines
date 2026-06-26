@@ -1,5 +1,5 @@
 ---
-description: Create feature specifications collaboratively
+description: Create feature specs collaboratively
 ---
 
 ## Execution Process
@@ -8,7 +8,7 @@ For each phase, print the phase name and emoji, then execute the steps in order.
 
 ## 🔍 Phase 1: Contextualization
 
-- Use the `codebase-explorer` agent to analyze the current codebase and understand what exists.
+- Use an Explore agent to analyze the current codebase and understand what exists.
 - Contextualize the user's feature request within the existing codebase: $ARGUMENTS
 
 ## 🛠️ Phase 2: Collaborative Refinement
@@ -47,9 +47,10 @@ Initiate **ultrathink** to enable deep-thinking exhaustive analysis:
 
 ## 🎯 Phase 4: User Validation
 
-Present the validated implementation specification to the user for approval:
+Present the validated implementation specification to the user in a well-structured format for approval:
 - If approved by the user, proceed to Phase 5 for final specification generation.
-- If not approved by the user, return to Phase 2 for more iterative refinement.
+- If changes are suggested by the user, return to Phase 2 for more iterative refinement.
+DO NOT PROCEED TO PHASE 5 WITHOUT USER APPROVAL.
 
 ## 📐 Phase 5: Specification Generation 
 
@@ -57,4 +58,4 @@ Synthesize all dialogue reasoning and validation insights into comprehensive dev
 - Preserve decision lineage with alternatives considered and trade-offs made during refinement.
 - Create actionable implementation guidance with specific steps adapted to this codebase.
 - Document implementation challenges, edge cases, and integration context from validation.
-- Write complete specification to ./features/[FEATURE-NAME].md with preserved reasoning and context.
+- Write complete specification to ./.claude/features/[FEATURE-NAME].md with preserved reasoning and context.
