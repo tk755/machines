@@ -92,7 +92,7 @@
 - **Never use emojis** in code, comments, or print statements
 
 ### File Organization
-- **Singular file names**: `client.py` not `clients.py`
+- **Semantic file names**: singular for subsystems (`client.py`, `session.py`), plural for collections (`commands.py`, `models.py`)
 - **Newlines at end of files** following Unix convention
 
 ## Examples
