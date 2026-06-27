@@ -2,8 +2,7 @@
   "env": {
     "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
   },
-  "model": "Opus",
-  "effortLevel": "xhigh",
+
   "permissions": {
     "allow": [
       "Bash",
@@ -11,33 +10,42 @@
       "Glob",
       "Grep",
       "WebSearch",
-      "WebFetch"
+      "WebFetch",
+      "mcp__ide__getDiagnostics",
+      "Skill(claude-api)"
     ],
     "deny": [],
     "ask": [
       "Bash(git *commit*)",
       "Bash(git *push*)",
       "Bash(sudo *)",
-      "Bash(rm -rf *)",
-      "Bash(curl *)",
-      "Bash(wget *)"
+      "Bash(rm -rf *)"
     ]
   },
+
+  "model": "opus[1m]",
+  "effortLevel": "xhigh",
+
   "attribution": {
     "commit": "",
     "pr": ""
   },
+  "includeGitInstructions": false,
+
   "worktree": {
     "bgIsolation": "none"
   },
+  "plansDirectory": "./.claude/plans",
+
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.py",
-    "padding": 0
+    "padding": 0,
+    "refreshInterval": 1
   },
+  "tui": "fullscreen",
+
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true
-  },
-  "includeGitInstructions": false,
-  "plansDirectory": "./.claude/plans"
+  }
 }
