@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# pypi-squat — reserve an unclaimed PyPI name with a minimal placeholder release.
+
+# default flags
+VERSION="0.0.0"
+VERBOSE=false
+
+print_help() {
+    cat <<EOF
+Usage: pypi-squat NAME [VERSION]
+
+Arguments:
+    NAME        PyPI project name to reserve
+    VERSION     Placeholder version (default: ${VERSION})
+
+Options:
+    --help      Show this help message
+    --verbose   Pass --verbose through to twine upload
+
+Authentication:
+    Uploads with twine, which needs a PyPI API token configured as either
+    environment variables:
+        export TWINE_USERNAME=__token__
+        export TWINE_PASSWORD=pypi-...
+    or a [pypi] entry in ~/.pypirc.
+
+Description:
+    Reserves an unclaimed PyPI name with a minimal placeholder release
+    until the real project is ready to publish.
+
+    This script is self-contained: the build backend and twine are fetched
+    into a temp directory and removed on exit; nothing on the machine is
+    installed or modified. Only python3 is required.
+
+    After upload, yank the placeholder on PyPI so the empty release is not
+    installable while the name stays reserved:
+        https://pypi.org/manage/project/NAME/releases/
+EOF
+}
+
+parse_args() {
+    POSITIONAL=()
+    for arg in "$@"; do
+        case "${arg}" in
+            --help)     print_help ; exit 0                        ;;
+            --verbose)  VERBOSE=true                                ;;
+            -*)         echo "Invalid option: ${arg}" >&2 ; exit 1  ;;
+            *)          POSITIONAL+=("${arg}")                      ;;
+        esac
+    done
+
+    if [[ ${#POSITIONAL[@]} -lt 1 || ${#POSITIONAL[@]} -gt 2 ]]; then
+        print_help >&2
+        exit 1
+    fi
+
+    NAME="${POSITIONAL[0]}"
+    VERSION="${POSITIONAL[1]:-${VERSION}}"
+
+    # validate against PyPI's project-name rules (PEP 508)
+    if [[ ! "${NAME}" =~ ^[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?$ ]]; then
+        echo "Invalid package name: ${NAME}" >&2
+        exit 1
+    fi
+}
+
+check_name() {
+    # exit 0 = registered on PyPI, 1 = available, 2 = could not determine
+    python3 - "$1" <<'PY'
+import sys, urllib.request, urllib.error
+name = sys.argv[1]
+try:
+    urllib.request.urlopen(f"https://pypi.org/pypi/{name}/json", timeout=10)
+except urllib.error.HTTPError as e:
+    sys.exit(1 if e.code == 404 else 2)
+except Exception:
+    sys.exit(2)
+sys.exit(0)
+PY
+}
+
+write_package() {
+    local pkgdir="$1"
+    mkdir -p "${pkgdir}"
+
+    cat >"${pkgdir}/pyproject.toml" <<EOF
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "${NAME}"
+version = "${VERSION}"
+description = "Reserved name; project coming soon."
+requires-python = ">=3.8"
+
+[tool.setuptools]
+py-modules = ["_placeholder"]
+EOF
+
+    printf '# placeholder for an upcoming release\n' >"${pkgdir}/_placeholder.py"
+}
+
+main() {
+    parse_args "$@"
+
+    command -v python3 >/dev/null || { echo "python3 not found" >&2; exit 1; }
+    python3 -m pip --version >/dev/null 2>&1 || { echo "pip not available" >&2; exit 1; }
+
+    # check whether the name is already registered on PyPI
+    local status=0
+    check_name "${NAME}" || status=$?
+    case "${status}" in
+        0)  printf "\e[31m%s is already registered on PyPI.\e[0m\n" "${NAME}" >&2; exit 1 ;;
+        1)  printf "\e[32m%s is available.\e[0m\n" "${NAME}" ;;
+        *)  printf "\e[33mCould not reach PyPI to check availability.\e[0m\n" >&2 ;;
+    esac
+
+    read -rp "Reserve this name on PyPI? [y/n] " confirm
+    [[ "${confirm}" == [yY] ]] || exit 0
+
+    # ephemeral workspace; everything below is removed on exit
+    WORKDIR=$(mktemp -d)
+    trap 'rm -rf "${WORKDIR}"' EXIT
+    local pkgdir="${WORKDIR}/pkg"
+    local distdir="${WORKDIR}/dist"
+    local libsdir="${WORKDIR}/libs"
+
+    write_package "${pkgdir}"
+
+    # build an empty wheel in an isolated build env (fetched, not cached)
+    printf "\nBuilding placeholder wheel\n"
+    python3 -m pip wheel --no-deps --no-cache-dir \
+        --wheel-dir "${distdir}" "${pkgdir}" >/dev/null
+
+    # fetch twine into a temp dir so nothing is installed on the machine
+    printf "Fetching upload tools\n"
+    python3 -m pip install --target "${libsdir}" --no-cache-dir twine >/dev/null 2>&1
+
+    # upload (auth via env vars or ~/.pypirc; keyring disabled for headless use)
+    printf "Uploading to PyPI\n"
+    local upload_args=(--non-interactive)
+    [[ "${VERBOSE}" == true ]] && upload_args+=(--verbose)
+    if PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring \
+        PYTHONPATH="${libsdir}" \
+        python3 -m twine upload "${upload_args[@]}" "${distdir}"/*.whl; then
+        printf "\nReserved \e[33m%s\e[0m at version \e[33m%s\e[0m\n" "${NAME}" "${VERSION}"
+        printf "Yank to block installs: \e[94mhttps://pypi.org/manage/project/%s/releases/\e[0m\n" "${NAME}"
+    else
+        printf "\n\e[31mFailed to reserve %s.\e[0m\n" "${NAME}" >&2
+        exit 1
+    fi
+}
+
+main "$@"
