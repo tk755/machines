@@ -74,8 +74,6 @@ def rate_limit_segment(data: dict, key: str) -> str | None:
         # within a day: show the time, minutes only when non-zero ("6:30pm" but "10am")
         minute = f":{dt.minute:02d}" if dt.minute else ""
         reset = f"{dt.strftime('%-I')}{minute}{dt.strftime('%p').lower()}"
-    elif days == 1:
-        reset = "tomorrow"
     elif days >= 7:
         reset = "next week"
     else:
