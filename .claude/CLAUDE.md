@@ -21,6 +21,11 @@
 - **Single-file focused changes** when scope matches expectations
 - **Technical implementation details** when requirements and approach are clear
 
+# Writing Files
+
+- **Never hard-wrap prose.** Let a paragraph run as one line; break only where a break is real — between paragraphs, list items, headings. Applies to every file type: markdown, docstrings, comments, commit messages, PGN comment text.
+- **Why:** hard wraps corrupt diffs (a one-word edit reflows the whole paragraph), they fight editors that soft-wrap anyway, and they make text harder to edit programmatically.
+
 # Python Coding Style Guidelines
 
 ## Design & Architecture
