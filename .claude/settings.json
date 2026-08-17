@@ -2,7 +2,11 @@
   "env": {
     "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
   },
-
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "includeGitInstructions": false,
   "permissions": {
     "allow": [
       "Bash",
@@ -15,38 +19,23 @@
       "Skill(claude-api)"
     ],
     "deny": [],
-    "ask": [
-      "Bash(git *commit*)",
-      "Bash(git *push*)",
-      "Bash(sudo *)",
-      "Bash(rm -rf *)"
-    ]
+    "ask": []
   },
-
-  "model": "claude-fable-5[1m]",
-  "effortLevel": "xhigh",
-
-  "attribution": {
-    "commit": "",
-    "pr": ""
-  },
-  "includeGitInstructions": false,
-
+  "model": "opus[1m]",
   "worktree": {
     "bgIsolation": "none"
   },
-  "plansDirectory": "./.claude/plans",
-
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.py",
     "padding": 0,
     "refreshInterval": 1
   },
-  "tui": "fullscreen",
-
   "enabledPlugins": {
     "skill-creator@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true
-  }
+  },
+  "effortLevel": "xhigh",
+  "plansDirectory": "./.claude/plans",
+  "tui": "fullscreen"
 }
