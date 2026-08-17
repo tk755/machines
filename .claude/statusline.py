@@ -28,7 +28,10 @@ def _format_count(n: int, trailing_zero: bool = True) -> str:
 
 def model_segment(data: dict) -> str:
     display_name = data.get("model", {}).get("display_name") or "unknown model"
-    return display_name.split("(")[0].strip()
+    name = display_name.split("(")[0].strip()
+    # effort is sent only for models that expose a reasoning-effort level
+    effort = data.get("effort", {}).get("level")
+    return f"{name} ({effort})" if effort else name
 
 
 def location_segment(data: dict) -> str | None:
