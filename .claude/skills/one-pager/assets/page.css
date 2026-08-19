@@ -1,0 +1,113 @@
+/* One-pager design tokens + component classes.
+   Inline the whole file into the page's single <style> block.
+   Data hues (--data-*) are bound to one meaning per document; tints only as
+   fills behind their own hue. SVG note: print engines do not cascade page
+   CSS into inline SVG, so no fill/stroke classes exist here — put every SVG
+   color inline on the element, templated from these token values. */
+:root {
+  --bg: #ffffff;
+  --ink: #16202b;
+  --muted: #5b6876;
+  --body2: #3d4a59;
+  --sans: 'Ubuntu Sans', sans-serif;
+  --mono: 'Ubuntu Mono', monospace;
+  --radius: 10px;
+  --card-border: #e3e8ef;
+  --surface: #f4f6f9;
+  --line: #4a5665;
+  --line-soft: #7e8a99;
+  --data-green: #34d399;
+  --data-gold: #ffc328;
+  --data-blue: #60a5fa;
+  --data-green-bg: #e6faf1;
+  --data-gold-bg: #fff3d6;
+  --data-blue-bg: #eaf2fe;
+  --ref-light: #c0c9d3;
+  --ref-dark: #5d6b7c;
+  --accent-warm: #8c6d52;
+  --deemph: #aab3bf;
+  --quote-bg: #f7f9fb;
+  --quote-border: #dbe2ea;
+  --pos: #15803d;   /* KPI deltas only, never on data marks */
+  --neg: #b91c1c;
+}
+
+* { box-sizing: border-box; }
+body { font-family: var(--sans); color: var(--ink); background: var(--bg);
+       max-width: 960px; margin: 0 auto; padding: 40px 32px 56px; line-height: 1.5; }
+h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.015em; margin: 0 0 4px; }
+.sub { color: var(--muted); font-size: 13.5px; margin-bottom: 24px; }
+h2 { font-size: 18px; font-weight: 700; margin: 40px 0 12px;
+     display: flex; align-items: center; gap: 10px; }
+h2 .num { background: var(--ink); color: #ffffff; font-size: 12px;
+          border-radius: 6px; padding: 2px 8px; font-family: var(--mono); }
+p { margin: 8px 0; font-size: 14px; }
+ul.bullets { margin: 8px 0; padding-left: 18px; }
+ul.bullets li { font-size: 14px; margin: 4px 0; }
+ul.bullets ul { margin: 3px 0 2px; padding-left: 18px; }
+
+/* Opener: framing paragraph, then a "Key Takeaways" card (<=3 bold-lead
+   takeaways, in-card title), then <=4 dense KPI cards (label / composite
+   value / note). Each KPI card is a self-contained insight. */
+.kpis { display: flex; gap: 12px; margin: 16px 0; }
+.kpi { flex: 1 1 0; border: 1px solid var(--card-border);
+       border-radius: var(--radius); padding: 10px 12px; }
+.kpi .l { font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase;
+          color: var(--muted); }
+.kpi .v { font-family: var(--mono); font-size: 22px; font-weight: 700;
+          margin-top: 2px; }
+.kpi .v .sub { font-size: 14px; font-weight: 400; color: var(--muted); }
+.kpi .v .pos { color: var(--pos); }
+.kpi .v .neg { color: var(--neg); }
+.kpi .note { font-size: 12px; color: var(--muted); margin-top: 4px;
+             line-height: 1.35; }
+.takeaways { border: 1px solid var(--card-border); border-radius: var(--radius);
+             padding: 12px 16px 12px 12px; margin: 16px 0; }
+.takeaways .tk-title { font-size: 10.5px; letter-spacing: 0.05em;
+                       text-transform: uppercase; color: var(--muted);
+                       margin: 0 0 6px 6px; }
+.takeaways ul.bullets { margin: 0; }
+
+/* figure caption under a card: "<b>Figure N.</b> instructional text + epistemic caveats */
+.cap { color: var(--muted); font-size: 12px; margin: 4px 0 12px;
+       font-family: var(--mono); }
+
+/* every visual sits in a card */
+.chart { border: 1px solid var(--card-border); border-radius: var(--radius);
+         padding: 14px 14px 8px; margin: 16px 0 4px; }
+.chart img { max-width: 100%; display: block; }
+.diagram { border: 1px solid var(--card-border); border-radius: var(--radius);
+           padding: 16px 16px 8px; margin: 16px 0 4px; }
+svg { max-width: 100%; height: auto; }
+
+/* exhibit card: worked example with image(s), quote blocks, closing note */
+.excard { border: 1px solid var(--card-border); border-radius: var(--radius);
+          padding: 14px 16px; margin: 16px 0; background: var(--bg); }
+.excard .extitle { font-weight: 600; font-size: 14.5px; margin: 0; }
+.excard .meta { color: var(--muted); font-size: 12px; margin: 3px 0 6px;
+                font-family: var(--mono); }
+.exrow { display: flex; gap: 16px; margin: 10px 0 0; }        /* portrait/square image */
+.exrow .eximg { width: 40%; align-self: flex-start; border: 1px solid var(--card-border);
+                border-radius: 4px; background: white; }
+.exrow .extext { flex: 1 1 0; }
+table.excols { width: 100%; border-collapse: collapse; table-layout: fixed;
+               margin: 10px 0 0; }                             /* paired documents */
+td.excol { vertical-align: top; }
+td.excol + td.excol { padding-left: 16px; }
+td.excol img { width: 100%; border: 1px solid var(--card-border); border-radius: 4px;
+               background: white; }
+.exwide { width: 100%; border: 1px solid var(--card-border); border-radius: 4px;
+          background: white; margin: 10px 0 0; }               /* landscape image */
+.exnote { font-size: 13px; color: var(--body2); margin: 12px 0 2px;
+          padding-top: 10px; border-top: 1px solid var(--card-border); }
+.exdoc { font-size: 12px; font-weight: 600; color: var(--ink); margin: 0 0 4px; }
+
+/* quote blocks: verbatim evidence with uppercase micro-label */
+.quote-label { font-size: 10.5px; letter-spacing: 0.05em; color: var(--muted);
+               text-transform: uppercase; margin: 10px 0 3px; }
+.quote { font-size: 12px; color: var(--body2); background: var(--quote-bg);
+         border-left: 3px solid var(--quote-border); padding: 6px 9px;
+         border-radius: 3px; white-space: pre-wrap; }
+.quote.verbatim { font-family: var(--mono); font-size: 10.5px; }
+
+@media print { body { padding: 16px 32px; } }
