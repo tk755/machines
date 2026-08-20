@@ -7,6 +7,7 @@ set -euo pipefail
 # default flags
 VERSION="0.0.0"
 VERBOSE=false
+DESCRIPTION=""
 
 print_help() {
     cat <<EOF
@@ -14,11 +15,12 @@ Usage: pypi-squat NAME [VERSION]
 
 Arguments:
     NAME        PyPI project name to reserve
-    VERSION     Placeholder version (default: ${VERSION})
+    VERSION     Release version (default: ${VERSION})
 
 Options:
-    --help      Show this help message
-    --verbose   Pass --verbose through to twine upload
+    --help              Show this help message
+    --verbose           Pass --verbose through to twine upload
+    --description TEXT   Summary for the release (default: the project name)
 
 Authentication:
     Uploads with twine, which needs a PyPI API token configured as either
@@ -43,13 +45,17 @@ EOF
 
 parse_args() {
     POSITIONAL=()
-    for arg in "$@"; do
-        case "${arg}" in
-            --help)     print_help ; exit 0                        ;;
-            --verbose)  VERBOSE=true                                ;;
-            -*)         echo "Invalid option: ${arg}" >&2 ; exit 1  ;;
-            *)          POSITIONAL+=("${arg}")                      ;;
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --help)          print_help ; exit 0                        ;;
+            --verbose)       VERBOSE=true                                ;;
+            --description)   [[ $# -ge 2 ]] || { echo "--description needs a value" >&2 ; exit 1 ; }
+                             DESCRIPTION="$2" ; shift                    ;;
+            --description=*) DESCRIPTION="${1#*=}"                       ;;
+            -*)              echo "Invalid option: $1" >&2 ; exit 1      ;;
+            *)               POSITIONAL+=("$1")                          ;;
         esac
+        shift
     done
 
     if [[ ${#POSITIONAL[@]} -lt 1 || ${#POSITIONAL[@]} -gt 2 ]]; then
@@ -59,6 +65,7 @@ parse_args() {
 
     NAME="${POSITIONAL[0]}"
     VERSION="${POSITIONAL[1]:-${VERSION}}"
+    DESCRIPTION="${DESCRIPTION:-${NAME}}"
 
     # validate against PyPI's project-name rules (PEP 508)
     if [[ ! "${NAME}" =~ ^[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?$ ]]; then
@@ -86,6 +93,11 @@ write_package() {
     local pkgdir="$1"
     mkdir -p "${pkgdir}"
 
+    # module name: normalize the project name to a valid import identifier
+    local module="${NAME,,}"
+    module="${module//[.-]/_}"
+    [[ "${module}" =~ ^[0-9] ]] && module="_${module}"
+
     cat >"${pkgdir}/pyproject.toml" <<EOF
 [build-system]
 requires = ["setuptools>=61"]
@@ -94,14 +106,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "${NAME}"
 version = "${VERSION}"
-description = "Reserved name; project coming soon."
+description = "${DESCRIPTION}"
 requires-python = ">=3.8"
 
 [tool.setuptools]
-py-modules = ["_placeholder"]
+py-modules = ["${module}"]
 EOF
 
-    printf '# placeholder for an upcoming release\n' >"${pkgdir}/_placeholder.py"
+    printf '__version__ = "%s"\n' "${VERSION}" >"${pkgdir}/${module}.py"
 }
 
 main() {
@@ -132,7 +144,7 @@ main() {
     write_package "${pkgdir}"
 
     # build an empty wheel in an isolated build env (fetched, not cached)
-    printf "\nBuilding placeholder wheel\n"
+    printf "\nBuilding wheel\n"
     python3 -m pip wheel --no-deps --no-cache-dir \
         --wheel-dir "${distdir}" "${pkgdir}" >/dev/null
 
