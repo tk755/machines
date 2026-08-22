@@ -81,6 +81,16 @@ dotfiles() {
 }
 
 backup_local_changes() {
+    # the tree the checkout will install; HEAD is correct for a fresh clone
+    local incoming="${1:-HEAD}"
+
+    # if local history is not already contained upstream, a path missing from
+    # the incoming tree is local work rather than an upstream deletion
+    local keep_missing=false
+    if ! dotfiles merge-base --is-ancestor HEAD "$incoming"; then
+        keep_missing=true
+    fi
+
     echo -e " $PROCESS_ICON Backing up local changes"
 
     if [ -d "$BACKUP_DIR" ]; then
@@ -101,13 +111,16 @@ backup_local_changes() {
             png|jpg|jpeg|gif|bmp|svg|ico|tiff|webp) continue ;;
         esac
 
-        # save local files that differ with HEAD version
-        if ! diff -q "$full_path" <(dotfiles show HEAD:"$file") &>/dev/null; then
+        # save local edits, and files the incoming tree will not restore
+        if ! diff -q "$full_path" <(dotfiles show HEAD:"$file" 2>/dev/null) &>/dev/null ||
+           { [ "$keep_missing" = true ] &&
+             ! dotfiles cat-file -e "$incoming:$file" 2>/dev/null; }; then
             local backup_path="$BACKUP_DIR/$file"
             mkdir -p "$(dirname "$backup_path")"
             cp "$full_path" "$backup_path"
         fi
-    done < <(dotfiles ls-tree -r --name-only HEAD)
+    done < <({ dotfiles ls-tree -r --name-only HEAD
+               dotfiles ls-tree -r --name-only "$incoming"; } | sort -u)
 }
 
 restore_local_changes() {
@@ -145,6 +158,13 @@ print_local_changes() {
         path="${file#$BACKUP_DIR/}"
         printf " ${color}%s${reset_color} %s\n" "M" "$path"
     done < <(find "$BACKUP_DIR" -type f | sort)
+}
+
+fetch_remote() {
+    echo -e " $PROCESS_ICON Fetching from \e[94m$REPO_URL_HTTPS\e[0m"
+
+    # clone via HTTPS to avoid needing SSH keys
+    dotfiles fetch --quiet "$REPO_URL_HTTPS" main
 }
 
 clone_repo() {
@@ -213,7 +233,8 @@ main() {
         clone_repo
         backup_local_changes
     else
-        backup_local_changes
+        fetch_remote
+        backup_local_changes FETCH_HEAD
         delete_repo
         clone_repo
     fi
