@@ -3,10 +3,13 @@ set -euo pipefail
 
 # suzuki install
 #
-# Hardware
-#   Framework 13 (AMD Ryzen 5 7640U)
-#   64GB DDR5, 2TB WD Black SN850X (4K native), MT7921 Wi-Fi
-#   13.5" 2880x1920 120Hz (BOE0CB4), Radeon 760M (RDNA 3)
+# Hardware:   Framework 13 (Oct 2025)
+# CPU:        AMD Ryzen 5 7640U
+# GPU:        Radeon 760M (RDNA 3)
+# RAM:        64GB DDR5-5600
+# Storage:    2TB WD Black SN850X (reformatted to 4K native)
+# Display:    13.5" 2880x1920 120Hz (BOE0CB4)
+# Wireless:   MT7921 (Wi-Fi + Bluetooth)
 #
 # OS:         Arch Linux
 # Filesystem: btrfs, subvolumes: @ @home @snapshots @var_log @var_cache

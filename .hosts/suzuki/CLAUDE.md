@@ -1,6 +1,6 @@
 # suzuki
 
-An Arch Linux machine.
+An Arch-Framework dev machine.
 
 ## Hardware
 
