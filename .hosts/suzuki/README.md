@@ -82,8 +82,8 @@ Each function is self-contained: it installs its own packages, writes its own co
 **System files** for anything with executable logic (scripts, systemd units, udev rules) and binary artifacts (e.g. ICC profiles). These live in the `root/` directory, mirroring their target path on the filesystem. Each system file is referenced by exactly one function, which copies it to the target filesystem with `install -Dm<mode>`.
 
 ```
-suzuki/root/       → machine-specific (e.g. MT7922 wifi fixes, ICC profile)
-common/root/       → shared across hosts (e.g. OLKB Planck udev rule)
+suzuki/root/    → machine-specific (e.g. MT7922 wifi fixes, ICC profile)
+all/root/       → shared across hosts (e.g. OLKB Planck udev rule)
 ```
 
 ## Maintenance
