@@ -384,19 +384,15 @@ setup_dropbox() {
     # libappindicator-gtk3: tray icon in waybar (sync status indicator)
     arch-chroot "$MOUNT" pacman -S --needed --noconfirm --asdeps \
         python-gpgme libappindicator-gtk3
-    aur_install dropbox
+
+    # dropbox ships the daemon
+    # dropbox-cli adds the control client for selective sync (exclude add/list)
+    aur_install dropbox dropbox-cli
 
     # https://wiki.archlinux.org/title/Dropbox#Prevent_automatic_updates
     # dropbox self-updates to ~/.dropbox-dist, conflicting with the AUR package
     # read-only directory blocks self-updates, prevents systemd restart loops
     arch-chroot "$MOUNT" install -dm0 -o tk -g tk /home/tk/.dropbox-dist
-
-    # https://wiki.archlinux.org/title/Dropbox#Filesystem_monitoring_problem
-    # default 8192 is too low, dropbox registers an inotify watch per file
-    mkdir -p "${MOUNT}/etc/sysctl.d"
-    cat > "${MOUNT}/etc/sysctl.d/50-dropbox.conf" <<'EOF'
-fs.inotify.max_user_watches = 100000
-EOF
 
     arch-chroot "$MOUNT" systemctl --global enable dropbox.service
 }

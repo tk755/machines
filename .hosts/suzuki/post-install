@@ -94,7 +94,7 @@ setup_github_ssh() {
     gh ssh-key add "${key}.pub" --title "suzuki" --type authentication
 }
 
-link_dropbox() {
+setup_dropbox() {
     # https://wiki.archlinux.org/title/Dropbox#Autostart_on_boot_with_systemd
     command -v dropbox &>/dev/null || return 0
 
@@ -117,6 +117,20 @@ link_dropbox() {
     echo "$url"
     xdg-open "$url" &>/dev/null &
     read -rp "Press Enter after linking Dropbox..."
+
+    # https://help.dropbox.com/sync/selective-sync-overview
+    command -v dropbox-cli &>/dev/null || return 0
+
+    # exclude directories with large files not needed on this machine
+    local excludes=(
+        "$HOME/Dropbox/Apps"
+        "$HOME/Dropbox/backups"
+        "$HOME/Dropbox/vids"
+    )
+    # excludes are ignored for paths that do not exist locally, so create them first
+    mkdir -p "${excludes[@]}"
+    dropbox-cli exclude add "${excludes[@]}"
+    dropbox-cli exclude list # print result
 }
 
 create_first_snapshot() {
@@ -156,8 +170,8 @@ main() {
     msg "Setting up GitHub SSH"
     setup_github_ssh
 
-    msg "Linking Dropbox"
-    link_dropbox
+    msg "Setting up Dropbox"
+    setup_dropbox
 
     msg "Creating first snapshot"
     create_first_snapshot
