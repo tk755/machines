@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# suzuki upgrade
+#
+# Check for package updates and upgrade interactively.
+
 # refresh waybar updates module on exit
 trap 'pkill -SIGRTMIN+1 waybar 2>/dev/null || true' EXIT
 

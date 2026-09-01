@@ -3,9 +3,7 @@ set -euo pipefail
 
 # suzuki post-install
 #
-# After first boot, log in as user tk. Then run:
-#   nmcli device wifi connect "YourNetworkName" --ask
-#   suzuki post-install
+# Interactive setup after first boot.
 
 ROOT_PART="/dev/nvme0n1p2"
 
@@ -44,7 +42,7 @@ update_firmware() {
 enroll_tpm() {
     # https://wiki.archlinux.org/title/Systemd-cryptenroll#Trusted_Platform_Module
     # binds to PCR 7 (Secure Boot state), BIOS/firmware updates may invalidate
-    # re-enroll: systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto /dev/nvme0n1p2
+    # re-enroll: systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto "$ROOT_PART"
     if sudo cryptsetup luksDump "$ROOT_PART" | grep -q systemd-tpm2; then
         echo "TPM already enrolled, skipping"
         return
