@@ -22,7 +22,7 @@
 - 64 GB DDR5-5600
 - 2TB WD Black SN850X NVMe SSD
 - 13.5-inch 2880x1920 120Hz matte display
-- Mediatek MT7921 Wi-Fi
+- Mediatek MT7922 Wi-Fi
 
 ## Configuration
 
@@ -254,7 +254,7 @@ pacstrap -K /mnt base linux linux-firmware amd-ucode cryptsetup btrfs-progs netw
 > | cryptsetup | Unlocks LUKS encrypted root at boot |
 > | btrfs-progs | Required for initramfs to mount btrfs root |
 > | networkmanager | Network management after reboot |
-> | iwd | Wi-Fi backend for NetworkManager ([better MT7921 stability](https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series))) |
+> | iwd | Wi-Fi backend for NetworkManager ([better MT7922 stability](https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series))) |
 > | nano | Text editor |
 > | git | Version control |
 > | sudo | Privilege elevation for non-root user |
@@ -625,7 +625,7 @@ sudo nano /etc/conf.d/wireless-regdom
 
 Uncomment `WIRELESS_REGDOM="US"`.
 
-Reboot to apply (the MT7921 firmware locks the domain at boot — `iw reg set` alone won't override it):
+Reboot to apply (the MT7922 firmware locks the domain at boot — `iw reg set` alone won't override it):
 
 ```
 sudo reboot
@@ -703,7 +703,7 @@ Test by switching to another TTY (`Ctrl+Alt+F2`) and logging in.
 
 ### 25. [Suspend workaround](https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Suspend) — rfkill service
 
-The MT7921 Wi-Fi module can cause a reboot instead of resume from suspend. A systemd service blocks all RF devices before sleep and unblocks on wake.
+The MT7922 Wi-Fi module can cause a reboot instead of resume from suspend. A systemd service blocks all RF devices before sleep and unblocks on wake.
 
 Create the service file:
 

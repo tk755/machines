@@ -8,7 +8,7 @@ An Arch-Framework dev machine.
 - 64GB DDR5-5600 RAM
 - 2TB WD Black SN850X NVMe
 - 13.5" 2880x1920 display (BOE0CB4 panel, custom ICC profile)
-- MediaTek MT7921 Wi-Fi/Bluetooth
+- MediaTek MT7922 Wi-Fi/Bluetooth
 
 ## References
 

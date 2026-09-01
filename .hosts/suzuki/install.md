@@ -55,7 +55,7 @@ Each function is self-contained: it installs its own packages, writes its own co
 **Overlays** for files with executable logic (scripts, systemd units, udev rules) and binary artifacts (e.g. ICC profiles). These live in the `overlays/` directory, mirroring their target path on the filesystem. Each overlay is referenced by exactly one function, which copies it to the target filesystem with `install -Dm<mode>`.
 
 ```
-suzuki/overlays/       → machine-specific (e.g. MT7921 wifi fixes, ICC profile)
+suzuki/overlays/       → machine-specific (e.g. MT7922 wifi fixes, ICC profile)
 common/overlays/       → shared across hosts (e.g. OLKB Planck udev rule)
 ```
 
