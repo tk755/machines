@@ -75,15 +75,15 @@ Each function is self-contained: it installs its own packages, writes its own co
 - `install_desktop` — graphical desktop environment and GUI apps
 - `aur_install` — helper for AUR packages, usable from any function
 
-### System config files
+### Config files
 
 **Heredocs** for declarative config (key-value settings, ini files). These are short and readable inline.
 
-**Overlays** for files with executable logic (scripts, systemd units, udev rules) and binary artifacts (e.g. ICC profiles). These live in the `overlays/` directory, mirroring their target path on the filesystem. Each overlay is referenced by exactly one function, which copies it to the target filesystem with `install -Dm<mode>`.
+**System files** for anything with executable logic (scripts, systemd units, udev rules) and binary artifacts (e.g. ICC profiles). These live in the `root/` directory, mirroring their target path on the filesystem. Each system file is referenced by exactly one function, which copies it to the target filesystem with `install -Dm<mode>`.
 
 ```
-suzuki/overlays/       → machine-specific (e.g. MT7922 wifi fixes, ICC profile)
-common/overlays/       → shared across hosts (e.g. OLKB Planck udev rule)
+suzuki/root/       → machine-specific (e.g. MT7922 wifi fixes, ICC profile)
+common/root/       → shared across hosts (e.g. OLKB Planck udev rule)
 ```
 
 ## Maintenance

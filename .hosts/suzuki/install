@@ -207,7 +207,7 @@ EOF
 
     # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Display
     # BOE0CB4 panel color profile for Framework 13
-    install -Dm644 "${SCRIPT_DIR}/overlays/usr/share/color/icc/BOE0CB4_01.icm" \
+    install -Dm644 "${SCRIPT_DIR}/root/usr/share/color/icc/BOE0CB4_01.icm" \
         "${MOUNT}/usr/share/color/icc/BOE0CB4_01.icm"
 }
 
@@ -272,7 +272,7 @@ EOF
 
     # https://wiki.archlinux.org/title/Framework_Laptop_13_(AMD_Ryzen_7040_Series)#Power_management
     # rfkill wifi/bt before suspend to prevent MT7922 firmware hangs
-    install -Dm644 "${SCRIPT_DIR}/overlays/etc/systemd/system/rfkill-before-sleep.service" \
+    install -Dm644 "${SCRIPT_DIR}/root/etc/systemd/system/rfkill-before-sleep.service" \
         "${MOUNT}/etc/systemd/system/rfkill-before-sleep.service"
 
     arch-chroot "$MOUNT" systemctl enable \
@@ -372,9 +372,9 @@ setup_power() {
 
 setup_keyboard() {
     # disable laptop keyboard when OLKB Planck is connected (udev + sysfs inhibit)
-    install -Dm755 "${COMMON_DIR}/overlays/usr/local/bin/toggle-laptop-keyboard" \
+    install -Dm755 "${COMMON_DIR}/root/usr/local/bin/toggle-laptop-keyboard" \
         "${MOUNT}/usr/local/bin/toggle-laptop-keyboard"
-    install -Dm644 "${COMMON_DIR}/overlays/etc/udev/rules.d/90-olkb-planck.rules" \
+    install -Dm644 "${COMMON_DIR}/root/etc/udev/rules.d/90-olkb-planck.rules" \
         "${MOUNT}/etc/udev/rules.d/90-olkb-planck.rules"
 }
 
