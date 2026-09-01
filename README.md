@@ -4,9 +4,9 @@ This repository tracks my Linux scripts and config files, collectively referred 
 
 ## Installation
 
-`~/.bin/bootstrap` is an idempotent script that automates the entire installation and update process for these dotfiles. On each run, it deletes the existing installation and clones the latest version of this repository as a [bare repository](https://www.atlassian.com/git/tutorials/dotfiles) with [sparse checkout](https://git-scm.com/docs/git-sparse-checkout), backing up conflicting files before checkout and restoring them afterward. This ensures that stale files from previous installations are removed, and local changes are never lost unless explicitly overwritten with `--force`.
+`~/.bin/bootstrap` installs or updates these dotfiles idempotently. It clones this repository as a [bare repository](https://www.atlassian.com/git/tutorials/dotfiles) with [sparse checkout](https://git-scm.com/docs/git-sparse-checkout), backing up conflicting files before checkout and restoring them afterward. Stale files from previous installations are removed; local changes are kept unless `--force` is passed.
 
-### New Machine
+### New machine
 
 Run the `bootstrap` script directly from GitHub:
 
@@ -14,7 +14,7 @@ Run the `bootstrap` script directly from GitHub:
 curl -fsSL https://raw.githubusercontent.com/tk755/dotfiles/main/.bin/bootstrap | bash
 ```
 
-### Existing Machine
+### Existing machine
 
 Use the `bootstrap` command to apply the latest dotfiles:
 
@@ -22,7 +22,7 @@ Use the `bootstrap` command to apply the latest dotfiles:
 bootstrap   # see --help for more options
 ```
 
-## Making Changes
+## Making changes
 
 A `dotfiles` alias is provided to interact with the bare repository:
 
