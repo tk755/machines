@@ -3,24 +3,6 @@ set -euo pipefail
 
 # suzuki install
 #
-# Hardware:   Framework 13 (Oct 2025)
-# CPU:        AMD Ryzen 5 7640U
-# GPU:        Radeon 760M (RDNA 3)
-# RAM:        64GB DDR5-5600
-# Storage:    2TB WD Black SN850X (reformatted to 4K native)
-# Display:    13.5" 2880x1920 120Hz (BOE0CB4)
-# Wireless:   MT7922 (Wi-Fi + Bluetooth)
-#
-# OS:         Arch Linux
-# Filesystem: btrfs, subvolumes: @ @home @snapshots @var_log @var_cache
-# Encryption: LUKS2, sd-encrypt (not busybox, supports LUKS2 + TPM2)
-# Bootloader: systemd-boot
-# Swap:       zram ram/2 (no swap partition)
-# Desktop:    sway (Wayland)
-# Network:    NetworkManager + iwd backend (MT7922 5GHz stability)
-# Power:      power-profiles-daemon (not tlp, AMD/Framework conflict)
-# Snapshots:  snapper + snap-pac (pacman hooks, no timeline)
-#
 # Boot the Arch ISO. Then run:
 #   iwctl station wlan0 connect "YourNetworkName"
 #   pacman -Sy git
