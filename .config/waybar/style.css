@@ -126,7 +126,8 @@ window#waybar {
     color: #4CAF50;
 }
 
-#battery.warning {
+#battery.warning,
+#temperature.warning {
     color: #FBC02D;
 }
 
