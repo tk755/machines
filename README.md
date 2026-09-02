@@ -11,7 +11,7 @@ This repository tracks my Linux scripts and config files, collectively referred 
 Run the `bootstrap` script directly from GitHub:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tk755/dotfiles/main/.bin/bootstrap | bash
+curl -fsSL https://raw.githubusercontent.com/tk755/linux/main/.bin/bootstrap | bash
 ```
 
 ### Existing machine

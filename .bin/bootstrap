@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-REPO_URL_HTTPS="https://github.com/tk755/dotfiles.git"
+REPO_URL_HTTPS="https://github.com/tk755/linux.git"
 REPO_LOCAL_DIR="$HOME/.dotfiles"
 BACKUP_DIR="$HOME/.bootstrap-backup"
 
