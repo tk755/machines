@@ -24,18 +24,18 @@ bootstrap   # see --help for more options
 
 ## Making changes
 
-A `dotfiles` alias is provided to interact with the bare repository:
+A `home` alias is provided to interact with the bare repository:
 
 ```bash
-alias dotfiles='git --git-dir=$HOME/.home.git --work-tree=$HOME'
+alias home='git --git-dir=$HOME/.home.git --work-tree=$HOME'
 ```
 
 Use it like a `git` command:
 
 ```bash
-dotfiles add ~/.bashrc
-dotfiles commit -m 'update bashrc'
-dotfiles push
+home add ~/.bashrc
+home commit -m 'update bashrc'
+home push
 ```
 
 ## Scripts

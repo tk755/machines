@@ -1,5 +1,5 @@
 ---
-description: Commit and push local dotfile changes to the dotfiles repository
+description: Commit and push local changes to the home repository
 disable-model-invocation: true
 allowed-tools: Skill
 ---
