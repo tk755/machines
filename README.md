@@ -27,7 +27,7 @@ bootstrap   # see --help for more options
 A `dotfiles` alias is provided to interact with the bare repository:
 
 ```bash
-alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+alias dotfiles='git --git-dir=$HOME/.home.git --work-tree=$HOME'
 ```
 
 Use it like a `git` command:

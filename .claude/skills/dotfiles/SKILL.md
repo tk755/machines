@@ -10,9 +10,9 @@ Immediately invoke the `/commit` skill using the Skill tool. The context below a
 
 ## Context
 
-Bare git repo at `$HOME/.dotfiles` with `$HOME` as the worktree. All git commands must be prefixed with:
+Bare git repo at `$HOME/.home.git` with `$HOME` as the worktree. All git commands must be prefixed with:
 ```
-git --git-dir=$HOME/.dotfiles --work-tree=$HOME
+git --git-dir=$HOME/.home.git --work-tree=$HOME
 ```
 
 `status.showUntrackedFiles` is set to `no` so new files won't appear in status. Use conversation context to identify new files to add, and always ask for confirmation before staging them.

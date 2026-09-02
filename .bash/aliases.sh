@@ -4,7 +4,7 @@ alias pdfconvert='libreoffice --headless --convert-to pdf' # file
 alias pdfcompile='pandoc --pdf-engine=pdflatex -f markdown -o' # out.pdf src.md
 
 # dotfiles bare repository
-alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+alias dotfiles='git --git-dir=$HOME/.home.git --work-tree=$HOME'
 
 # common mistypes
 alias sl='ls'
