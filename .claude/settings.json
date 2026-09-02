@@ -4,7 +4,9 @@
   },
   "attribution": {
     "commit": "",
-    "pr": ""
+    "pr": "",
+    "sessionUrl": false,
+    "commitTrailers": false
   },
   "includeGitInstructions": false,
   "permissions": {
