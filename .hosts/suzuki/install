@@ -397,7 +397,7 @@ setup_dropbox() {
     arch-chroot "$MOUNT" systemctl --global enable dropbox.service
 }
 
-deploy_dotfiles() {
+run_bootstrap() {
     # copy bootstrap into chroot, run as tk, then clean up
     cp "${SCRIPT_DIR}/../../.bin/bootstrap" "${MOUNT}/home/tk/bootstrap"
     arch-chroot "$MOUNT" su - tk -c '/home/tk/bootstrap --all --force'
@@ -503,8 +503,8 @@ main() {
     setup_dropbox
 
     # user environment
-    msg "Deploying dotfiles"
-    deploy_dotfiles
+    msg "Running bootstrap"
+    run_bootstrap
 
     cleanup
     msg "Rebooting"

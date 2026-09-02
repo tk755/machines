@@ -3,7 +3,7 @@
 set -euo pipefail
 
 REPO_URL_HTTPS="https://github.com/tk755/dotfiles.git"
-DOTFILES_DIR="$HOME/.dotfiles"
+REPO_LOCAL_DIR="$HOME/.dotfiles"
 BACKUP_DIR="$HOME/.bootstrap-backup"
 
 # paths to exclude in headless install
@@ -47,7 +47,7 @@ Headless exclude patterns:
 
 Description:
     Installs the latest version of $REPO_URL_HTTPS.
-      - Clones the bare repository to $DOTFILES_DIR.
+      - Clones the bare repository to $REPO_LOCAL_DIR.
       - Removes the previous repo and its tracked files.
 
     Uses sparse checkout to exclude GUI-related files in headless environments.
@@ -75,9 +75,9 @@ print_bold() {
     printf "\e[1m%s\e[0m\n" "$1"
 }
 
-# dotfiles git wrapper function
-dotfiles() {
-    git --git-dir="$DOTFILES_DIR" --work-tree="$HOME" "$@"
+# bare repository git wrapper function
+repo() {
+    git --git-dir="$REPO_LOCAL_DIR" --work-tree="$HOME" "$@"
 }
 
 backup_local_changes() {
@@ -87,7 +87,7 @@ backup_local_changes() {
     # if local history is not already contained upstream, a path missing from
     # the incoming tree is local work rather than an upstream deletion
     local keep_missing=false
-    if ! dotfiles merge-base --is-ancestor HEAD "$incoming"; then
+    if ! repo merge-base --is-ancestor HEAD "$incoming"; then
         keep_missing=true
     fi
 
@@ -112,15 +112,15 @@ backup_local_changes() {
         esac
 
         # save local edits, and files the incoming tree will not restore
-        if ! diff -q "$full_path" <(dotfiles show HEAD:"$file" 2>/dev/null) &>/dev/null ||
+        if ! diff -q "$full_path" <(repo show HEAD:"$file" 2>/dev/null) &>/dev/null ||
            { [ "$keep_missing" = true ] &&
-             ! dotfiles cat-file -e "$incoming:$file" 2>/dev/null; }; then
+             ! repo cat-file -e "$incoming:$file" 2>/dev/null; }; then
             local backup_path="$BACKUP_DIR/$file"
             mkdir -p "$(dirname "$backup_path")"
             cp "$full_path" "$backup_path"
         fi
-    done < <({ dotfiles ls-tree -r --name-only HEAD
-               dotfiles ls-tree -r --name-only "$incoming"; } | sort -u)
+    done < <({ repo ls-tree -r --name-only HEAD
+               repo ls-tree -r --name-only "$incoming"; } | sort -u)
 }
 
 restore_local_changes() {
@@ -164,36 +164,36 @@ fetch_remote() {
     echo -e " $PROCESS_ICON Fetching from \e[94m$REPO_URL_HTTPS\e[0m"
 
     # clone via HTTPS to avoid needing SSH keys
-    dotfiles fetch --quiet "$REPO_URL_HTTPS" main
+    repo fetch --quiet "$REPO_URL_HTTPS" main
 }
 
 clone_repo() {
     echo -e " $PROCESS_ICON Cloning from \e[94m$REPO_URL_HTTPS\e[0m"
 
     # clone via HTTPS to avoid needing SSH keys
-    git clone --bare --branch main "$REPO_URL_HTTPS" "$DOTFILES_DIR" &> /dev/null
+    git clone --bare --branch main "$REPO_URL_HTTPS" "$REPO_LOCAL_DIR" &> /dev/null
 
     # change url to SSH for future pushes
     REPO_URL_SSH="git@github.com:${REPO_URL_HTTPS#https://github.com/}"
-    git --git-dir="$DOTFILES_DIR" remote set-url origin "$REPO_URL_SSH"
+    git --git-dir="$REPO_LOCAL_DIR" remote set-url origin "$REPO_URL_SSH"
 
     # configure git settings
-    dotfiles config branch.main.remote origin
-    dotfiles config branch.main.merge refs/heads/main
-    dotfiles config --local status.showUntrackedFiles no
-    dotfiles config core.sparseCheckout true
+    repo config branch.main.remote origin
+    repo config branch.main.merge refs/heads/main
+    repo config --local status.showUntrackedFiles no
+    repo config core.sparseCheckout true
 }
 
 delete_repo() {
     echo -e " $PROCESS_ICON Deleting repo and tracked files"
 
     # delete all tracked files
-    dotfiles ls-tree -r --name-only HEAD |
+    repo ls-tree -r --name-only HEAD |
         sed "s|^|$HOME/|" |
         xargs -r -d '\n' rm -f
 
     # delete all tracked directories that are now empty
-    dotfiles ls-tree -r --name-only HEAD |
+    repo ls-tree -r --name-only HEAD |
         awk -F/ 'NF>1 { $NF=""; print $0 }' OFS="/" |
         sed 's:/$::' |
         sort -u |
@@ -201,14 +201,14 @@ delete_repo() {
         xargs -r -d '\n' rmdir 2>/dev/null || true
 
     # delete repo
-    rm -rf "$DOTFILES_DIR"
+    rm -rf "$REPO_LOCAL_DIR"
 }
 
 sparse_checkout() {
     echo -e " $PROCESS_ICON Checking out files"
 
     # create sparse checkout file
-    local sparse_file="$DOTFILES_DIR/info/sparse-checkout"
+    local sparse_file="$REPO_LOCAL_DIR/info/sparse-checkout"
     mkdir -p "$(dirname "$sparse_file")"
 
     # update sparse checkout file
@@ -222,14 +222,14 @@ sparse_checkout() {
     fi
 
     # checkout (overwrites local files)
-    dotfiles checkout --quiet 2> /dev/null
+    repo checkout --quiet 2> /dev/null
 }
 
 main() {
     parse_args "$@"
 
-    print_bold "Installing to $DOTFILES_DIR"
-    if [ ! -d "$DOTFILES_DIR" ]; then
+    print_bold "Installing to $REPO_LOCAL_DIR"
+    if [ ! -d "$REPO_LOCAL_DIR" ]; then
         clone_repo
         backup_local_changes
     else
@@ -246,12 +246,12 @@ main() {
     echo
     print_bold "Bootstrap complete"
     local sparse_info
-    sparse_info="$(dotfiles status | sed -n 's/.*sparse checkout with \(.*\)\./\1/p')"
+    sparse_info="$(repo status | sed -n 's/.*sparse checkout with \(.*\)\./\1/p')"
     if [ "$HEADLESS" = true ]; then
         sparse_info="$sparse_info (headless)"
     fi
     echo -e " $FINISH_ICON $sparse_info"
-    echo -e " $FINISH_ICON Last commit $(dotfiles log -1 --format=%cr)\e[2m - $(dotfiles log -1 --format=%s)\e[0m"
+    echo -e " $FINISH_ICON Last commit $(repo log -1 --format=%cr)\e[2m - $(repo log -1 --format=%s)\e[0m"
 }
 
 cd "$HOME"

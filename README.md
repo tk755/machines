@@ -4,7 +4,7 @@ This repository tracks my Linux scripts and config files, collectively referred 
 
 ## Installation
 
-`~/.bin/bootstrap` installs or updates these dotfiles idempotently. It clones this repository as a [bare repository](https://www.atlassian.com/git/tutorials/dotfiles) with [sparse checkout](https://git-scm.com/docs/git-sparse-checkout), backing up conflicting files before checkout and restoring them afterward. Stale files from previous installations are removed; local changes are kept unless `--force` is passed.
+`~/.bin/bootstrap` installs and updates these dotfiles idempotently. It clones this repository as a [bare repository](https://www.atlassian.com/git/tutorials/dotfiles) with [sparse checkout](https://git-scm.com/docs/git-sparse-checkout), backing up conflicting files before checkout and restoring them afterward. Stale files from previous installations are removed; local changes are kept unless `--force` is passed.
 
 ### New machine
 
