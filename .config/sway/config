@@ -239,7 +239,7 @@ bindsym $mod+$olkb05 exec spotify
 bindsym $mod+$shift+$olkb05 nop
 
 bindsym $mod+$olkb14 exec ghostty
-bindsym $mod+$shift+$olkb14 nop
+bindsym $mod+$shift+$olkb14 exec ghostty +new-window -e claude
 
 bindsym $mod+$olkb15 exec firefox --new-window
 bindsym $mod+$shift+$olkb15 exec firefox --new-window --private-window
